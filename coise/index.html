@@ -1,0 +1,2384 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Propuesta de diseño · COISE</title>
+<meta name="description" content="COISE, clínica dental en Sevilla (Av. Emilio Lemos 6). Ortodoncia, endodoncia, cirugía, odontopediatría, estética dental, implantes y periodoncia. Trato directo y personal. Pide tu cita.">
+<meta name="theme-color" content="#040A13">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23071526'/%3E%3Cpath d='M7 11l4-5 5 3 5-3 4 5 1 6-4 4-1 7-3 1-2-6-2 6-3-1-1-7-4-4z' fill='%23D6F1F8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<script>
+  /* Antes de pintar: activa el modo con JS y detecta movimiento reducido. */
+  (function () {
+    var d = document.documentElement;
+    d.classList.add("js");
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("rm");
+  })();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+
+<style>
+/* =========================================================
+   1. TOKENS
+   ========================================================= */
+:root {
+  --bg: #040A13;            /* fondo base, casi negro azulado */
+  --navy: #071526;
+  --navy-2: #0C2038;        /* superficie elevada */
+  --navy-3: #133152;
+  --brand: #5B8A9A;         /* azul petróleo de marca */
+  --brand-2: #8FB6C3;
+  --ice: #D6F1F8;           /* acento claro: CTAs */
+  --ice-2: #F1FAFD;
+  --glow: #8ADCF0;          /* realces luminosos */
+  --ink: #EDF5F8;
+  --muted: #A3BAC4;         /* secundario, > 9:1 sobre --bg */
+  --paper: #E8EFF2;         /* sección clara */
+  --paper-2: #D7E3E9;
+  --ink-dark: #07182A;
+  --ink-dark-soft: #33505F;
+  --error: #FFB4B4;
+  --error-dark: #A12828;
+
+  --font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --gutter: clamp(16px, 3.4vw, 52px);
+  --maxw: 1480px;
+  --section-y: clamp(110px, 13vw, 210px);
+  --header-h: 76px;
+
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 220ms;
+  --t-med: 640ms;
+}
+
+/* =========================================================
+   2. BASE
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 12px); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-weight: 380;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+main, footer { position: relative; z-index: 1; overflow-x: clip; }
+img, svg { display: block; max-width: 100%; }
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+strong { font-weight: 600; }
+::selection { background: var(--glow); color: var(--ink-dark); }
+:focus-visible { outline: 2px solid var(--glow); outline-offset: 4px; border-radius: 6px; }
+.light :focus-visible { outline-color: var(--ink-dark); }
+
+.skip {
+  position: absolute; left: var(--gutter); top: -80px; z-index: 300;
+  background: var(--ice); color: var(--ink-dark); padding: 12px 18px; text-decoration: none; font-weight: 600; border-radius: 999px;
+}
+.skip:focus { top: 12px; }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.wrap { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+.section { padding-block: var(--section-y); position: relative; }
+
+/* Tipografía: fina y ancha, como el logotipo */
+.display {
+  font-weight: 300; font-stretch: 118%;
+  letter-spacing: -0.035em; line-height: .98;
+  text-wrap: balance;
+}
+.h2 { font-size: clamp(2.2rem, 5.2vw, 5.4rem); }
+.lead { font-size: clamp(1.08rem, 1.35vw, 1.3rem); line-height: 1.55; color: var(--muted); max-width: 48ch; }
+
+/* Máscaras para revelar texto (las crea el JS) */
+.m { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .1em; margin-bottom: -.1em; }
+.m > .mi { display: inline-block; will-change: transform; }
+
+/* Grano de película fijo (no repinta al hacer scroll) */
+.grain {
+  position: fixed; inset: -50%; z-index: 90; pointer-events: none; opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 1.2s steps(4) infinite;
+}
+@keyframes grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-3%, 2%); } 50% { transform: translate(2%, -3%); } 75% { transform: translate(-2%, -1%); } 100% { transform: translate(0, 0); } }
+
+/* =========================================================
+   3. ESCENARIO 3D (fijo, detrás de todo)
+   ========================================================= */
+.stage { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(60vw 60vh at 50% 42%, #10314a 0%, var(--bg) 70%); }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .9s var(--ease-out); }
+.has-3d .stage canvas { opacity: 1; }
+.rm .stage { position: absolute; height: 100vh; height: 100svh; }
+
+/* Respaldo plano (sin WebGL o sin CDN) */
+.fallback { display: none; }
+.no-3d .fallback, .no-js .fallback { display: grid; }
+
+/* =========================================================
+   4. CARGA
+   ========================================================= */
+.loader { display: none; }
+.js:not(.rm) .loader {
+  position: fixed; inset: 0; z-index: 250; display: grid; place-items: center;
+  background: var(--bg); color: var(--ink);
+  animation: loader-safety 0s linear 7s forwards; /* por si el JS falla del todo */
+}
+@keyframes loader-safety { to { visibility: hidden; opacity: 0; } }
+.loader__in { display: grid; justify-items: center; gap: 30px; width: min(520px, 76vw); }
+.loader__mark { width: 100%; height: auto; overflow: visible; }
+.loader__mark path, .loader__mark polygon { fill: none; stroke: var(--ice); stroke-width: 1.4; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.loader__mark .lm-tooth polygon { stroke: var(--brand-2); stroke-width: 1; }
+.loader__row { width: 100%; display: flex; justify-content: space-between; align-items: baseline; color: var(--muted); font-size: .95rem; }
+.loader__num { font-variant-numeric: tabular-nums; font-stretch: 118%; font-weight: 300; color: var(--ink); font-size: 1.5rem; }
+.loader__bar { width: 100%; height: 2px; background: rgba(214, 241, 248, .12); overflow: hidden; border-radius: 2px; }
+.loader__bar i { display: block; height: 100%; width: 100%; background: var(--ice); transform-origin: 0 50%; transform: scaleX(0); }
+
+/* =========================================================
+   5. CURSOR
+   ========================================================= */
+.cursor { display: none; }
+.has-cursor .cursor { display: block; position: fixed; left: 0; top: 0; z-index: 240; pointer-events: none; }
+.has-cursor, .has-cursor a, .has-cursor button, .has-cursor label, .has-cursor [data-cursor] { cursor: none; }
+.has-cursor input[type="text"], .has-cursor input[type="tel"], .has-cursor input[type="email"] { cursor: text; }
+.cursor__dot, .cursor__ring { position: absolute; left: 0; top: 0; border-radius: 50%; will-change: transform; }
+.cursor__dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--ice); mix-blend-mode: difference; }
+.cursor__ring {
+  width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .55);
+  display: grid; place-items: center;
+  transition: width .45s var(--ease-out), height .45s var(--ease-out), margin .45s var(--ease-out), background-color .3s, box-shadow .3s, opacity .3s;
+}
+.cursor__label { font-size: .78rem; font-weight: 600; color: var(--ink-dark); opacity: 0; transition: opacity .2s; white-space: nowrap; }
+.cursor.is-link .cursor__ring { width: 64px; height: 64px; margin: -32px 0 0 -32px; background: rgba(214, 241, 248, .12); box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .8); }
+.cursor.is-label .cursor__ring { width: 88px; height: 88px; margin: -44px 0 0 -44px; background: var(--ice); box-shadow: none; }
+.cursor.is-label .cursor__label { opacity: 1; }
+.cursor.is-label .cursor__dot { opacity: 0; }
+.cursor.is-hidden .cursor__ring, .cursor.is-hidden .cursor__dot { opacity: 0; }
+.cursor.is-down .cursor__ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; }
+
+/* =========================================================
+   6. BOTONES
+   ========================================================= */
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+  min-height: 56px; padding: 0 8px 0 26px; border: 0; border-radius: 999px;
+  font-weight: 560; font-size: 1rem; letter-spacing: -0.005em; text-decoration: none; white-space: nowrap;
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast), box-shadow var(--t-med) var(--ease-out), transform .25s var(--ease-out);
+}
+.btn:active { transform: scale(.97); }
+.btn__ic {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  transition: transform .5s var(--ease-out), background-color var(--t-fast);
+}
+.btn__ic svg { width: 16px; height: 16px; }
+.btn:hover .btn__ic { transform: translate(3px, -2px) scale(1.06); }
+.btn--primary { background: var(--ice); color: var(--ink-dark); }
+.btn--primary .btn__ic { background: var(--ink-dark); color: var(--ice); }
+.btn--primary:hover { background: var(--ice-2); box-shadow: 0 18px 50px -18px rgba(138, 220, 240, .7); }
+.btn--ghost { background: rgba(214, 241, 248, .06); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .22); padding: 0 26px; }
+.btn--ghost:hover { background: rgba(214, 241, 248, .12); box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .5); }
+.btn--dark { background: var(--ink-dark); color: var(--ice); }
+.btn--dark .btn__ic { background: var(--ice); color: var(--ink-dark); }
+.btn--dark:hover { background: #0E2944; }
+.btn--text { background: none; color: var(--ink); padding: 0 4px; min-height: 48px; text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+.btn--text:hover { color: var(--glow); }
+.btn--sm { min-height: 48px; font-size: .95rem; padding-left: 20px; }
+.btn--sm .btn__ic { width: 34px; height: 34px; }
+.btn--sm.btn--ghost { padding: 0 20px; }
+
+/* =========================================================
+   7. CABECERA
+   ========================================================= */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 120;
+  transition: transform .6s var(--ease-out), background-color .5s var(--ease-out);
+}
+.site-header.is-scrolled { background: rgba(4, 10, 19, .78); }
+.site-header.is-hidden { transform: translateY(-100%); }
+.site-header__in { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: var(--header-h); }
+.brand { display: inline-flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink); }
+.brand__tooth { width: 26px; height: 33px; }
+.brand__word { width: 104px; height: auto; color: var(--ink); --wm-sw: 1.5px; }
+.nav { display: flex; align-items: center; gap: clamp(18px, 2.6vw, 40px); }
+.nav__links { display: flex; gap: clamp(16px, 2.2vw, 34px); }
+.nav__links a { position: relative; text-decoration: none; font-weight: 420; font-size: .97rem; padding: 8px 0; color: var(--muted); transition: color var(--t-fast); }
+.nav__links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: var(--ice); transform: scaleX(0); transform-origin: 100% 50%; transition: transform .5s var(--ease-out); }
+.nav__links a:hover { color: var(--ink); }
+.nav__links a:hover::after { transform: scaleX(1); transform-origin: 0 50%; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.call {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 18px; border-radius: 999px;
+  text-decoration: none; font-weight: 500; font-size: .95rem; color: var(--ink);
+  background: rgba(91, 138, 154, .22); box-shadow: inset 0 0 0 1px rgba(143, 182, 195, .28); transition: background-color var(--t-fast);
+}
+.call:hover { background: rgba(91, 138, 154, .45); }
+.call svg { width: 17px; height: 17px; color: var(--glow); }
+.nav-toggle { display: none; position: relative; width: 48px; height: 48px; background: none; border: 0; padding: 0; margin-right: -8px; }
+.nav-toggle span { position: absolute; left: 12px; right: 12px; height: 1.5px; background: var(--ink); transition: transform .5s var(--ease-out), top .5s var(--ease-out); }
+.nav-toggle span:nth-child(1) { top: 19px; }
+.nav-toggle span:nth-child(2) { top: 28px; }
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { top: 23.5px; transform: rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { top: 23.5px; transform: rotate(-45deg); }
+
+@media (max-width: 1080px) {
+  .nav-toggle { display: block; }
+  .nav {
+    position: fixed; inset: 0; z-index: -1; flex-direction: column; align-items: flex-start; justify-content: center; gap: 28px;
+    background: rgba(4, 10, 19, .97); padding: calc(var(--header-h) + 20px) var(--gutter) 40px;
+    clip-path: inset(0 0 100% 0); visibility: hidden;
+    transition: clip-path .7s var(--ease-io), visibility 0s linear .7s;
+  }
+  .nav.is-open { clip-path: inset(0 0 0 0); visibility: visible; transition-delay: 0s; }
+  .nav__links { flex-direction: column; gap: 4px; }
+  .nav__links li { overflow: hidden; }
+  .nav__links a { display: inline-block; font-size: clamp(2.2rem, 9vw, 3.6rem); font-weight: 300; font-stretch: 118%; letter-spacing: -0.03em; line-height: 1.12; color: var(--ink); transform: translateY(105%); transition: transform .8s var(--ease-out); }
+  .nav__links a::after { display: none; }
+  .nav.is-open .nav__links a { transform: none; }
+  .nav.is-open .nav__links li:nth-child(2) a { transition-delay: .06s; }
+  .nav.is-open .nav__links li:nth-child(3) a { transition-delay: .12s; }
+  .nav.is-open .nav__links li:nth-child(4) a { transition-delay: .18s; }
+  .nav.is-open .nav__links li:nth-child(5) a { transition-delay: .24s; }
+  .site-header.menu-open { background: transparent; transform: none; }
+}
+@media (max-width: 560px) {
+  .call__num { display: none; }
+  .call { padding: 0 14px; }
+  .brand__word { width: 84px; }
+}
+
+/* =========================================================
+   8. HÉROE
+   ========================================================= */
+.hero { position: relative; height: 230vh; }
+.rm .hero, .no-motion .hero { height: auto; }
+.hero__pin {
+  position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 560px;
+  display: grid; grid-template-rows: auto 1fr auto;
+  padding: calc(var(--header-h) + 8px) 0 clamp(24px, 4vh, 48px);
+  overflow: hidden;
+}
+.rm .hero__pin, .no-motion .hero__pin { position: relative; }
+.hero__top { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: .95rem; }
+.hero__top p:last-child { text-align: right; }
+.hero__bottom { grid-row: 3; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, .8fr); gap: clamp(20px, 4vw, 72px); align-items: end; }
+.hero__title { font-size: clamp(2.3rem, 5.3vw, 5.9rem); line-height: .96; max-width: 14ch; }
+.hero__side { display: grid; gap: 26px; justify-items: start; }
+.hero__lead { color: var(--ink); opacity: .86; font-size: clamp(1.02rem, 1.2vw, 1.18rem); max-width: 40ch; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 10px 12px; }
+.hero__fallback { grid-row: 2; place-items: center; align-content: center; gap: clamp(16px, 3vh, 28px); padding-block: 12px; }
+.hero__fallback .fb-tooth { width: auto; height: clamp(150px, 34vh, 340px); filter: drop-shadow(0 0 60px rgba(138, 220, 240, .25)); }
+.hero__fallback .fb-word { width: min(72vw, 820px); color: var(--ice); --wm-sw: 2px; }
+.hero__cue { position: absolute; left: 50%; bottom: 18px; width: 1px; height: 46px; background: rgba(214, 241, 248, .16); overflow: hidden; }
+.hero__cue::after { content: ""; position: absolute; left: 0; right: 0; top: -40%; height: 40%; background: var(--ice); animation: cue 2s var(--ease-io) infinite; }
+@keyframes cue { to { top: 110%; } }
+
+@media (max-width: 860px) {
+  .hero { height: 190vh; }
+  .hero__bottom { grid-template-columns: 1fr; gap: 18px; }
+  .hero__title { font-size: clamp(2.05rem, 8.6vw, 3.4rem); font-stretch: 108%; max-width: 16ch; }
+  .hero__lead { font-size: 1rem; }
+  .hero__top { font-size: .85rem; }
+  .hero__cue { display: none; }
+  .hero__side { gap: 18px; }
+}
+@media (max-width: 400px) {
+  .hero__actions .btn { flex: 1 1 auto; }
+}
+
+/* =========================================================
+   9. MANIFIESTO + VALORES (tarjetas apiladas)
+   ========================================================= */
+.manifesto__grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(24px, 5vw, 80px); }
+.manifesto__title { max-width: 13ch; }
+.statement {
+  margin-top: clamp(36px, 4vw, 64px);
+  font-size: clamp(1.4rem, 2.5vw, 2.25rem); line-height: 1.28; font-weight: 320; font-stretch: 108%;
+  letter-spacing: -0.015em; max-width: 30ch; color: var(--ink);
+}
+.statement .sw { display: inline; }
+
+.values { margin-top: clamp(80px, 10vw, 160px); display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(24px, 5vw, 80px); }
+.values__intro { position: sticky; top: calc(var(--header-h) + 40px); align-self: start; }
+.values__intro p { color: var(--muted); max-width: 30ch; margin-top: 18px; }
+.values__title { font-size: clamp(1.8rem, 3vw, 2.9rem); max-width: 12ch; }
+.stack { display: grid; gap: clamp(24px, 4vh, 48px); }
+.card { position: sticky; top: calc(var(--header-h) + 28px + var(--i, 0) * 22px); }
+.bezel { padding: 7px; border-radius: 34px; background: rgba(214, 241, 248, .05); box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .09); }
+.bezel__core { position: relative; overflow: hidden; border-radius: 27px; background: var(--navy-2); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07); }
+.card .bezel__core { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: clamp(340px, 52vh, 480px); }
+.card__body { padding: clamp(24px, 3.4vw, 48px); display: grid; align-content: start; gap: 18px; }
+.card__body h3 { font-weight: 320; font-stretch: 116%; font-size: clamp(1.7rem, 2.8vw, 2.8rem); letter-spacing: -0.03em; line-height: 1; max-width: 11ch; }
+.card__body p { color: var(--muted); max-width: 34ch; }
+.card__shade { position: absolute; inset: 0; background: var(--bg); opacity: 0; pointer-events: none; }
+
+/* Fotos con tratamiento en azul de marca */
+.ph { position: relative; overflow: hidden; background: var(--navy-3); }
+.ph img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.08) brightness(.92); transform-origin: 50% 50%; }
+.ph::after { content: ""; position: absolute; inset: 0; background: #2f6f8a; mix-blend-mode: color; opacity: .78; pointer-events: none; }
+.ph::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(4, 10, 19, 0) 55%, rgba(4, 10, 19, .45)); pointer-events: none; }
+.card .ph { min-height: 260px; }
+
+@media (max-width: 860px) {
+  .manifesto__grid, .values { grid-template-columns: 1fr; }
+  .values__intro { position: relative; top: 0; }
+  .card { position: relative; top: 0; }
+  .card .bezel__core { grid-template-columns: 1fr; }
+  .card .ph { min-height: 200px; height: 34vh; order: -1; }
+}
+
+/* =========================================================
+   10. MARQUEE
+   ========================================================= */
+.marquee { position: relative; padding-block: clamp(40px, 6vw, 90px); overflow: hidden; }
+.marquee__row { display: flex; width: max-content; will-change: transform; }
+.marquee__row + .marquee__row { margin-top: clamp(4px, 1vw, 14px); }
+.marquee__track { display: flex; align-items: center; flex: none; animation: mq 46s linear infinite; }
+.marquee__row--rev .marquee__track { animation-direction: reverse; animation-duration: 52s; }
+.marquee__item { font-weight: 250; font-stretch: 122%; font-size: clamp(2.6rem, 7.4vw, 7.6rem); letter-spacing: -0.04em; line-height: 1.08; padding-inline: clamp(18px, 2.4vw, 40px); white-space: nowrap; }
+.marquee__row--rev .marquee__item { color: transparent; -webkit-text-stroke: 1px rgba(214, 241, 248, .55); }
+.marquee__gem { width: clamp(16px, 1.8vw, 26px); height: auto; flex: none; }
+@keyframes mq { to { transform: translateX(-100%); } }
+
+/* =========================================================
+   11. TRATAMIENTOS
+   ========================================================= */
+.treat-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 5vw, 96px); align-items: start; }
+.treat-aside .h2 { font-size: clamp(2.2rem, 3.9vw, 4.2rem); }
+.treat-aside { position: sticky; top: calc(var(--header-h) + 32px); display: grid; gap: 26px; }
+.finder .bezel__core { padding: clamp(22px, 2.6vw, 36px); }
+.finder h3 { font-weight: 340; font-stretch: 114%; font-size: clamp(1.45rem, 2.2vw, 2.1rem); letter-spacing: -0.03em; line-height: 1.05; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.chip {
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px;
+  background: rgba(214, 241, 248, .07); box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .1); color: var(--ink); font-weight: 430; font-size: .95rem;
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast), transform .3s var(--ease-out);
+}
+.chip:hover { background: rgba(138, 220, 240, .16); transform: translateY(-2px); }
+.chip:active { transform: scale(.97); }
+.chip[aria-pressed="true"] { background: var(--ice); color: var(--ink-dark); box-shadow: none; }
+.finder__result { margin-top: 22px; min-height: 3.2em; }
+.finder__hint { color: var(--muted); }
+.finder__card { background: rgba(4, 10, 19, .55); border-radius: 20px; padding: clamp(18px, 2.2vw, 26px); display: grid; gap: 16px; animation: rise .7s var(--ease-out) both; }
+.finder__card h4 { font-weight: 360; font-stretch: 114%; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -0.03em; line-height: 1.05; color: var(--glow); margin: 0 0 6px; }
+.finder__card p { color: var(--ink); max-width: 56ch; }
+.finder__btns { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.finder__note { margin-top: 18px; font-size: .9rem; color: var(--muted); max-width: 70ch; }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+
+.treat-list { display: grid; }
+.treat { position: relative; border-radius: 26px; transition: background-color .5s var(--ease-out); }
+.treat::before { content: ""; position: absolute; left: clamp(18px, 2.4vw, 30px); right: clamp(18px, 2.4vw, 30px); top: 0; height: 1px; background: rgba(214, 241, 248, .1); }
+.treat:first-child::before { display: none; }
+.treat:hover, .treat.is-open { background: rgba(12, 32, 56, .75); }
+.treat:hover::before, .treat:hover + .treat::before, .treat.is-open::before, .treat.is-open + .treat::before { opacity: 0; }
+.treat.is-suggested { background: rgba(19, 49, 82, .9); }
+.treat__btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: clamp(20px, 2.4vw, 30px) clamp(18px, 2.4vw, 30px); background: none; border: 0; text-align: left; border-radius: 26px; }
+.treat__name { display: block; font-weight: 280; font-stretch: 118%; font-size: clamp(1.7rem, 3.4vw, 3.4rem); letter-spacing: -0.04em; line-height: 1; transition: transform .7s var(--ease-out), color var(--t-fast); }
+.treat__btn:hover .treat__name { transform: translateX(14px); }
+.treat.is-suggested .treat__name { color: var(--glow); }
+.treat__sum { display: block; margin-top: 10px; font-size: 1rem; color: var(--muted); max-width: 52ch; }
+.treat__icon { flex: none; width: 50px; height: 50px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .25); display: grid; place-items: center; transition: background-color var(--t-fast), transform .6s var(--ease-out), box-shadow var(--t-fast); }
+.treat__icon::before, .treat__icon::after { content: ""; grid-area: 1 / 1; width: 16px; height: 1.5px; background: var(--ink); transition: transform .6s var(--ease-out), background-color var(--t-fast); }
+.treat__icon::after { transform: rotate(90deg); }
+.treat__btn:hover .treat__icon { box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .7); }
+.treat__btn[aria-expanded="true"] .treat__icon { background: var(--ice); transform: rotate(180deg); box-shadow: none; }
+.treat__btn[aria-expanded="true"] .treat__icon::before,
+.treat__btn[aria-expanded="true"] .treat__icon::after { background: var(--ink-dark); }
+.treat__btn[aria-expanded="true"] .treat__icon::after { transform: rotate(0deg); }
+.treat__panel { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .7s var(--ease-out), visibility 0s linear .7s; }
+.treat__btn[aria-expanded="true"] + .treat__panel { grid-template-rows: 1fr; visibility: visible; transition-delay: 0s; }
+.treat__panel > div { overflow: hidden; }
+.treat__content { padding: 0 clamp(18px, 2.4vw, 30px) clamp(22px, 2.6vw, 32px); display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; align-items: end; }
+.treat__content p { max-width: 58ch; margin-bottom: 20px; }
+.treat__content .ph { aspect-ratio: 4 / 3; border-radius: 18px; }
+.noscript-list { display: grid; gap: 14px; }
+
+/* Imagen que sigue al cursor sobre la lista */
+.peek { position: fixed; left: 0; top: 0; z-index: 60; width: 300px; height: 380px; margin: -190px 0 0 -150px; pointer-events: none; border-radius: 22px; overflow: hidden; opacity: 0; transform: scale(.6); visibility: hidden; }
+.peek.ph { position: fixed; }
+.peek img { position: absolute; inset: 0; }
+
+@media (max-width: 960px) {
+  .treat-grid { grid-template-columns: 1fr; }
+  .treat-aside { position: relative; top: 0; }
+  .treat__content { grid-template-columns: 1fr; }
+  .peek { display: none; }
+}
+
+/* =========================================================
+   12. SECCIONES FIJADAS CON SCRUB (implantes, estética)
+   ========================================================= */
+.spot { position: relative; height: 300vh; }
+.spot--short { height: 240vh; }
+.spot__panel { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; align-items: safe center; overflow: hidden; padding-block: calc(var(--header-h) + 8px) 16px; }
+.spot__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(24px, 4vw, 64px); align-items: center; width: 100%; }
+.spot--right .spot__grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.spot--right .spot__text { grid-column: 2; }
+.spot__title { font-size: clamp(2.2rem, min(5.4vw, 8.4vh), 5.6rem); max-width: 11ch; }
+.spot__text .lead { margin-top: min(24px, 2.4vh); }
+.spot__art { display: none; }
+.no-3d .spot__art, .rm .spot__art { display: grid; place-items: center; height: min(60vh, 560px); }
+.spot__art .fb-tooth { height: 80%; width: auto; }
+.spot--right .spot__art { grid-column: 1; grid-row: 1; }
+.tk { position: absolute; left: 0; width: 1px; height: 0; pointer-events: none; }
+.spot__big { position: absolute; right: var(--gutter); bottom: clamp(16px, 4vh, 40px); font-weight: 200; font-stretch: 125%; font-size: clamp(5rem, 15vw, 15rem); line-height: .8; letter-spacing: -0.06em; color: transparent; -webkit-text-stroke: 1px rgba(214, 241, 248, .22); pointer-events: none; user-select: none; }
+.spot--right .spot__big { right: auto; left: var(--gutter); }
+
+.parts { display: grid; gap: 8px; margin: clamp(16px, min(3vw, 4vh), 40px) 0; }
+.part { padding: 16px 20px; border-radius: 18px; background: rgba(12, 32, 56, .55); color: var(--muted); transition: background-color .6s var(--ease-out), color .6s, transform .6s var(--ease-out); }
+.part strong { display: block; color: var(--ink); font-weight: 500; font-size: 1.12rem; letter-spacing: -0.015em; }
+.part.is-on, .parts.all-on .part { background: rgba(19, 49, 82, .95); color: var(--ink); transform: translateX(12px); }
+.part.is-on strong { color: var(--glow); }
+
+.glints { display: flex; flex-wrap: wrap; gap: 12px clamp(20px, 2.4vw, 40px); margin: clamp(16px, min(3vw, 4vh), 40px) 0; }
+.glint b { display: block; font-weight: 250; font-stretch: 120%; font-size: clamp(2.4rem, min(4.6vw, 8vh), 5.4rem); letter-spacing: -0.05em; line-height: 1; color: var(--ice); font-variant-numeric: tabular-nums; }
+.glint b small { font-size: .34em; font-weight: 400; color: var(--muted); margin-left: .2em; letter-spacing: -0.01em; font-stretch: 100%; }
+.glint > span { display: block; color: var(--muted); font-size: .95rem; margin-top: 6px; }
+.extras { display: grid; gap: 8px; margin-bottom: clamp(16px, min(3vw, 4vh), 38px); }
+.extras li { color: var(--muted); }
+.extras strong { color: var(--ink); font-weight: 500; }
+
+@media (min-width: 861px) and (max-height: 700px) {
+  .part { padding: 9px 16px; line-height: 1.4; font-size: .95rem; }
+  .part strong { font-size: 1rem; }
+}
+.rm .spot, .no-3d .spot, .no-motion .spot { height: auto; }
+.rm .spot__panel, .no-3d .spot__panel, .no-motion .spot__panel { position: relative; height: auto; padding-block: var(--section-y); }
+
+@media (max-width: 860px) {
+  .spot__panel { align-items: flex-end; }
+  .spot__grid, .spot--right .spot__grid { grid-template-columns: 1fr; }
+  .spot--right .spot__text, .spot--right .spot__art { grid-column: 1; grid-row: auto; }
+  .no-3d .spot__art, .rm .spot__art { height: 30vh; }
+  .spot__text { padding-bottom: 24px; padding-top: 44vh; padding-top: 44svh; }
+  .rm .spot__text, .no-3d .spot__text, .no-motion .spot__text { padding-top: 0; }
+  .spot__text .lead { font-size: 1rem; margin-top: 12px; }
+  .spot__title { font-size: clamp(2rem, 9vw, 3rem); }
+  .parts { margin: 16px 0; gap: 6px; }
+  .part { padding: 10px 14px; font-size: .92rem; line-height: 1.4; }
+  .part strong { font-size: 1rem; }
+  .glints { margin: 14px 0; gap: 6px 24px; }
+  .glint b { font-size: 2.4rem; }
+  .extras { font-size: .95rem; margin-bottom: 16px; }
+  .spot__big { display: none; }
+}
+
+/* =========================================================
+   13. PRIMERA VISITA (clara, scroll horizontal)
+   ========================================================= */
+.light { background: var(--paper); color: var(--ink-dark); position: relative; z-index: 2; }
+.light .lead { color: var(--ink-dark-soft); }
+.visit { padding-block: var(--section-y); }
+.visit__head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 24px 64px; align-items: end; margin-bottom: clamp(40px, 5vw, 72px); }
+.visit__title { max-width: 14ch; }
+.visit__track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 22px); max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+.visit__step { display: grid; gap: 18px; align-content: start; }
+.visit__step .ph { aspect-ratio: 4 / 5; border-radius: 24px; }
+.visit__step .ph::after { opacity: .55; }
+.visit__step h3 { font-weight: 340; font-stretch: 114%; font-size: clamp(1.4rem, 2vw, 2rem); letter-spacing: -0.03em; line-height: 1.05; }
+.visit__step p { color: var(--ink-dark-soft); max-width: 36ch; }
+.visit__cta { margin-top: clamp(40px, 5vw, 72px); display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.visit__cta p { color: var(--ink-dark-soft); }
+.visit__cta a:not(.btn) { color: var(--ink-dark); font-weight: 600; }
+
+/* Versión fijada horizontal (solo escritorio con movimiento) */
+.is-hscroll .visit { padding: 0; }
+.is-hscroll .visit__sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+.is-hscroll .visit__track { display: flex; width: max-content; max-width: none; margin-inline: 0; gap: clamp(18px, 2vw, 32px); padding-inline: var(--gutter); }
+.is-hscroll .visit__step { width: clamp(300px, 27vw, 420px); flex: none; }
+.is-hscroll .visit__step .ph { aspect-ratio: auto; height: clamp(200px, 38vh, 420px); }
+.is-hscroll .visit__step:nth-child(even) { margin-top: 6vh; }
+.is-hscroll .visit__head { margin-bottom: 4vh; }
+.is-hscroll .visit__cta { margin-top: 4vh; }
+
+@media (max-width: 960px) {
+  .visit__head { grid-template-columns: 1fr; }
+  .visit__track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .visit__track { grid-template-columns: 1fr; }
+  .visit__step .ph { aspect-ratio: 16 / 10; }
+}
+
+/* =========================================================
+   14. CITA (formulario multipaso, demo)
+   ========================================================= */
+.booking { background: var(--bg); }
+.booking__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.booking__title { font-size: clamp(2.8rem, 7vw, 7rem); }
+.booking__intro .lead { margin-top: 24px; }
+.booking__call { margin-top: 34px; display: grid; gap: 2px; }
+.booking__call a { font-weight: 280; font-stretch: 118%; font-size: clamp(1.7rem, 3vw, 2.8rem); letter-spacing: -0.03em; text-decoration: none; width: fit-content; transition: color var(--t-fast); line-height: 1.2; }
+.booking__call a:hover { color: var(--glow); }
+.form-card .bezel__core { padding: clamp(22px, 4vw, 52px); }
+.progress { height: 3px; background: rgba(214, 241, 248, .1); border-radius: 3px; margin-bottom: 12px; overflow: hidden; }
+.progress__bar { height: 100%; width: 33.33%; background: var(--ice); border-radius: 3px; transition: width .7s var(--ease-out); }
+.progress__label { color: var(--muted); font-size: .93rem; margin-bottom: 26px; }
+.form-step { border: 0; padding: 0; margin: 0; min-width: 0; }
+.form-step legend { font-weight: 340; font-stretch: 114%; font-size: clamp(1.5rem, 2.4vw, 2.1rem); letter-spacing: -0.03em; line-height: 1.08; padding: 0; margin-bottom: 22px; }
+.form-step legend:focus { outline: none; }
+.options { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.opt { position: relative; }
+.opt input { position: absolute; z-index: 1; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.opt span { display: flex; align-items: center; min-height: 52px; padding: 8px 18px; border-radius: 16px; background: rgba(214, 241, 248, .06); box-shadow: inset 0 0 0 1px rgba(214, 241, 248, .08); font-weight: 430; transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast), transform var(--t-fast) var(--ease-out); }
+.opt:hover span { background: rgba(138, 220, 240, .13); }
+.opt input:active + span { transform: scale(.98); }
+.opt input:checked + span { background: var(--ice); color: var(--ink-dark); font-weight: 560; box-shadow: none; }
+.opt input:focus-visible + span { outline: 2px solid var(--glow); outline-offset: 3px; }
+.sub-legend { font-weight: 560; margin: 26px 0 12px; display: block; }
+.field { display: grid; gap: 6px; margin-bottom: 18px; }
+.field label { font-weight: 500; }
+.field input { min-height: 54px; padding: 0 18px; background: rgba(214, 241, 248, .06); border: 1px solid rgba(214, 241, 248, .12); border-radius: 16px; font-size: 1rem; width: 100%; transition: border-color var(--t-fast), background-color var(--t-fast); }
+.field input:hover { background: rgba(214, 241, 248, .1); }
+.field input:focus { outline: none; border-color: var(--glow); background: rgba(4, 10, 19, .6); }
+.field input[aria-invalid="true"] { border-color: var(--error); }
+.error { color: var(--error); font-size: .93rem; font-weight: 500; }
+.error:empty { display: none; }
+.consent { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: start; margin-bottom: 8px; }
+.consent input { width: 22px; height: 22px; margin: 3px 0 0; accent-color: var(--glow); }
+.consent label { font-size: .93rem; color: var(--muted); }
+.form-nav { display: flex; flex-wrap: wrap; gap: 12px 20px; justify-content: space-between; align-items: center; margin-top: 28px; }
+.form-note { font-size: .93rem; color: var(--muted); margin-top: 18px; }
+.success { animation: rise .7s var(--ease-out) both; }
+.success:focus { outline: none; }
+.success h3 { font-weight: 320; font-stretch: 116%; font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: -0.035em; line-height: 1.05; color: var(--glow); margin-bottom: 14px; }
+.success p { max-width: 52ch; color: var(--muted); }
+.success__demo { background: rgba(138, 220, 240, .12); color: var(--ink) !important; padding: 16px 20px; border-radius: 16px; margin: 18px 0; font-weight: 500; }
+.success__summary { margin: 18px 0 26px; display: grid; gap: 4px; }
+.success__summary p { color: var(--ink); }
+@media (max-width: 960px) { .booking__grid { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   15. CONTACTO
+   ========================================================= */
+.contact { background: var(--bg); }
+.contact__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.contact__title { font-size: clamp(2.8rem, 7vw, 7rem); }
+.contact__list { display: grid; gap: 30px; margin-top: 44px; }
+.contact__list dt { color: var(--muted); font-size: .93rem; margin-bottom: 6px; }
+.contact__list dd { font-weight: 300; font-stretch: 114%; font-size: clamp(1.4rem, 2.2vw, 2rem); letter-spacing: -0.025em; line-height: 1.25; }
+.contact__list a { position: relative; text-decoration: none; transition: color var(--t-fast); }
+.contact__list a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: 100% 50%; transition: transform .5s var(--ease-out); }
+.contact__list a:hover { color: var(--glow); }
+.contact__list a:hover::after { transform: scaleX(1); transform-origin: 0 50%; }
+.map .bezel__core { background: var(--navy-2); }
+.map iframe { width: 100%; height: clamp(320px, 40vw, 540px); border: 0; display: block; filter: invert(.92) hue-rotate(185deg) saturate(.6) brightness(.92) contrast(.95); }
+.map__caption { padding: 16px 20px; font-size: .93rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; }
+.map__caption a { color: var(--glow); font-weight: 500; }
+@media (max-width: 960px) { .contact__grid { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   16. PIE
+   ========================================================= */
+.site-footer { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; padding-top: clamp(64px, 8vw, 110px); padding-bottom: 26px; }
+.footer__in { flex: 1; display: flex; flex-direction: column; }
+.footer__lockup { flex: 1; display: grid; justify-items: center; align-content: center; gap: clamp(18px, 3vh, 30px); text-align: center; }
+.footer__stage { width: 100%; height: min(34vh, 340px); display: grid; place-items: center; }
+.footer__stage .fb-tooth { height: 100%; width: auto; }
+.footer__word { width: 100%; color: var(--ice); overflow: visible; }
+.footer__word path { stroke-width: 2.2; }
+.footer__claim { font-size: clamp(1.15rem, 1.8vw, 1.6rem); color: var(--muted); font-weight: 300; font-stretch: 110%; }
+.footer__cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.footer__row { display: flex; flex-wrap: wrap; gap: 12px 36px; justify-content: space-between; align-items: center; color: var(--muted); font-size: .93rem; margin-top: 56px; }
+.footer__row a { text-underline-offset: 4px; }
+.linklike { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 4px; color: inherit; font-size: inherit; }
+dialog { max-width: 520px; width: calc(100% - 32px); border: 0; border-radius: 28px; padding: 34px; background: var(--navy-2); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .5); }
+dialog::backdrop { background: rgba(3, 8, 15, .72); }
+dialog h2 { font-weight: 320; font-stretch: 116%; font-size: 2rem; letter-spacing: -0.03em; margin-bottom: 12px; }
+dialog p { margin-bottom: 24px; color: var(--muted); }
+
+/* =========================================================
+   17. MOVIMIENTO REDUCIDO
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; transition-delay: 0s !important; }
+  .marquee__track { animation: none !important; }
+  .marquee__row { flex-wrap: wrap; width: auto; justify-content: center; }
+  .marquee__track[aria-hidden="true"] { display: none; }
+  .marquee__track { flex-wrap: wrap; justify-content: center; }
+  .grain { animation: none; }
+  .hero__cue { display: none; }
+}
+</style>
+</head>
+
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<!--
+  Símbolos SVG reutilizables:
+  · #tooth: la muela facetada del logotipo (respaldo plano y marca de la cabecera).
+  · #wm: la palabra COISE con trazos finos y anchos. Es la misma geometría que
+    se construye en 3D (letras de tubo) en el héroe.
+-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="tooth" viewBox="0 0 200 250">
+    <polygon points="30,70 60,30 65,80" fill="#F4F7F9"/>
+    <polygon points="60,30 100,52 65,80" fill="#DCE3E8"/>
+    <polygon points="100,52 100,92 65,80" fill="#C9D3DA"/>
+    <polygon points="100,52 140,30 135,80" fill="#EEF2F5"/>
+    <polygon points="100,52 135,80 100,92" fill="#B9C5CE"/>
+    <polygon points="140,30 170,70 135,80" fill="#D3DCE2"/>
+    <polygon points="30,70 65,80 22,110" fill="#E4EAEE"/>
+    <polygon points="22,110 65,80 60,118" fill="#C3CED6"/>
+    <polygon points="65,80 100,92 60,118" fill="#D8E0E6"/>
+    <polygon points="100,92 100,128 60,118" fill="#AEBBC5"/>
+    <polygon points="100,92 135,80 100,128" fill="#C8D2D9"/>
+    <polygon points="135,80 140,118 100,128" fill="#A6B4BF"/>
+    <polygon points="135,80 170,70 140,118" fill="#BAC6CF"/>
+    <polygon points="170,70 178,110 140,118" fill="#9DADB9"/>
+    <polygon points="22,110 60,118 50,142" fill="#B4C1CB"/>
+    <polygon points="60,118 100,128 50,142" fill="#9FAEBA"/>
+    <polygon points="100,128 150,142 50,142" fill="#8E9FAC"/>
+    <polygon points="140,118 100,128 150,142" fill="#97A8B4"/>
+    <polygon points="178,110 150,142 140,118" fill="#889AA7"/>
+    <polygon points="50,142 150,142 100,160" fill="#8496A4"/>
+    <polygon points="50,142 100,160 74,186" fill="#9AAAB6"/>
+    <polygon points="50,142 74,186 40,178" fill="#B3C0CA"/>
+    <polygon points="40,178 74,186 50,226" fill="#A2B1BC"/>
+    <polygon points="74,186 62,238 50,226" fill="#8A9BA8"/>
+    <polygon points="150,142 126,186 100,160" fill="#7E909E"/>
+    <polygon points="150,142 160,178 126,186" fill="#95A6B2"/>
+    <polygon points="160,178 150,226 126,186" fill="#7A8C9A"/>
+    <polygon points="126,186 150,226 138,238" fill="#6F8291"/>
+  </symbol>
+  <symbol id="wm" viewBox="-6 -6 642 112">
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--wm-sw, 4.4)" vector-effect="non-scaling-stroke">
+      <path vector-effect="non-scaling-stroke" d="M85.36 14.64A50 50 0 1 0 85.36 85.36"/>
+      <circle vector-effect="non-scaling-stroke" cx="206" cy="50" r="50"/>
+      <path vector-effect="non-scaling-stroke" d="M326 0V100"/>
+      <path vector-effect="non-scaling-stroke" d="M470.17 8.93A42 25 0 1 0 438 50A42 25 0 1 1 405.83 91.07"/>
+      <path vector-effect="non-scaling-stroke" d="M630 0H550V100H630M550 50H618"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- Pantalla de carga: el logotipo se dibuja mientras se prepara el 3D -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__in">
+    <svg class="loader__mark" viewBox="-10 -40 900 260" aria-hidden="true" focusable="false">
+      <g class="lm-tooth" transform="translate(0 -30) scale(.8)">
+        <polygon pathLength="1" points="30,70 60,30 100,52 140,30 170,70 178,110 150,142 160,178 150,226 138,238 126,186 100,160 74,186 62,238 50,226 40,178 50,142 22,110"/>
+        <polygon pathLength="1" points="60,30 65,80 100,92 135,80 140,30"/>
+        <polygon pathLength="1" points="22,110 65,80 60,118 100,128 140,118 135,80 178,110"/>
+        <polygon pathLength="1" points="50,142 100,128 150,142 100,160"/>
+      </g>
+      <g transform="translate(232 24) scale(1)">
+        <path pathLength="1" d="M85.36 14.64A50 50 0 1 0 85.36 85.36"/>
+        <path pathLength="1" d="M156 50A50 50 0 1 0 256 50A50 50 0 1 0 156 50"/>
+        <path pathLength="1" d="M326 0V100"/>
+        <path pathLength="1" d="M470.17 8.93A42 25 0 1 0 438 50A42 25 0 1 1 405.83 91.07"/>
+        <path pathLength="1" d="M630 0H550V100H630M550 50H618"/>
+      </g>
+    </svg>
+    <div class="loader__bar"><i id="loader-bar"></i></div>
+    <div class="loader__row"><span>Clínica dental · Sevilla</span><span class="loader__num" id="loader-num">0</span></div>
+  </div>
+</div>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__ring"><span class="cursor__label" id="cursor-label"></span></span><span class="cursor__dot"></span></div>
+<div class="stage" id="stage" aria-hidden="true"><canvas id="gl"></canvas></div>
+
+<header class="site-header" id="top">
+  <div class="wrap site-header__in">
+    <a class="brand" href="#inicio" aria-label="COISE, inicio">
+      <svg class="brand__tooth" aria-hidden="true" focusable="false"><use href="#tooth"/></svg>
+      <svg class="brand__word" viewBox="-6 -6 642 112" aria-hidden="true" focusable="false"><use href="#wm"/></svg>
+    </a>
+    <nav class="nav" id="nav" aria-label="Principal">
+      <ul class="nav__links">
+        <li><a href="#clinica">Clínica</a></li>
+        <li><a href="#tratamientos">Tratamientos</a></li>
+        <li><a href="#implantes">Implantes</a></li>
+        <li><a href="#estetica">Estética</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+      <a class="btn btn--primary btn--sm magnetic" href="#cita">Pide tu cita <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+    </nav>
+    <div class="header-actions">
+      <a class="call" href="tel:+34670440971" aria-label="Llamar al 670 44 09 71">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span class="call__num">670 44 09 71</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav" aria-label="Abrir menú"><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main id="contenido">
+
+  <!-- HÉROE: la muela de cristal y la palabra COISE se dibujan en el lienzo 3D -->
+  <section class="hero" id="inicio" aria-labelledby="hero-title">
+    <span class="tk" style="top:50vh" data-tooth="x:0;y:0.07;s:0.86;ry:0.45;rx:0.16;rz:0;ex:0;gl:0.15;op:1;wm:0" data-tooth-m="x:0;y:0.09;s:0.56"></span>
+    <span class="tk" style="top:calc(100% - 50vh)" data-tooth="x:0.02;y:0.1;s:1.12;ry:3.5;rx:0.34;rz:-0.1;wm:1;gl:0.25" data-tooth-m="y:0.12;s:0.72"></span>
+    <div class="hero__pin">
+      <div class="wrap hero__top" data-hero-fade>
+        <p>Clínica dental en Sevilla</p>
+        <p>Av. Emilio Lemos 6</p>
+      </div>
+      <div class="fallback hero__fallback" aria-hidden="true">
+        <svg class="fb-tooth" viewBox="0 0 200 250" focusable="false"><use href="#tooth"/></svg>
+        <svg class="fb-word" viewBox="-6 -6 642 112" focusable="false"><use href="#wm"/></svg>
+      </div>
+      <div class="wrap hero__bottom">
+        <h1 class="display hero__title" id="hero-title"><span class="visually-hidden">COISE, clínica dental en Sevilla. </span><span data-split-hero>Tu sonrisa habla de nosotros.</span></h1>
+        <div class="hero__side" data-hero-fade>
+          <p class="hero__lead">Trato directo y personal, técnicas avanzadas y un plan pensado para tu boca. Sin prisas y con cada paso explicado.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary magnetic" href="#cita">Pide tu cita <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+            <a class="btn btn--ghost magnetic" href="tel:+34670440971">670 44 09 71</a>
+          </div>
+        </div>
+      </div>
+      <span class="hero__cue" aria-hidden="true"></span>
+    </div>
+  </section>
+
+  <!-- LA CLÍNICA: manifiesto y valores -->
+  <section class="section" id="clinica" aria-labelledby="clinica-title">
+    <div class="wrap">
+      <div class="manifesto__grid"
+        data-tooth="x:0.6;y:-0.04;s:0.7;ry:6.1;rx:0.25;rz:-0.18;op:1;wm:1;gl:0.15"
+        data-tooth-m="x:0.7;y:0.3;s:0.34;op:0">
+        <div>
+          <h2 class="display h2 manifesto__title" id="clinica-title" data-split>Una clínica donde te conocen.</h2>
+          <p class="statement" id="statement">En COISE te atiende una persona que sabe quién eres y qué necesitas, con la tecnología al servicio de tu tratamiento y no al revés.</p>
+        </div>
+      </div>
+
+      <!-- FOTOS DE EJEMPLO (Unsplash): sustituir por fotos reales de la clínica COISE antes de publicar. -->
+      <div class="values"
+        data-tooth="x:-0.66;y:-0.4;s:0.46;ry:8.3;rx:-0.2;rz:0.14;op:1;gl:0.2"
+        data-tooth-m="op:0;x:-0.8">
+        <div class="values__intro">
+          <h3 class="display values__title" data-split>Tres compromisos contigo.</h3>
+          <p data-reveal>Lo que nos pides cuando te sientas en el sillón, y lo que intentamos darte en cada visita.</p>
+        </div>
+        <ul class="stack" id="stack">
+          <li class="card" style="--i:0">
+            <div class="bezel"><div class="bezel__core">
+              <div class="card__body">
+                <h3>Trato directo y personal</h3>
+                <p>Hablas con quien te trata. Sin intermediarios ni prisas, y con cada paso explicado en un lenguaje claro.</p>
+              </div>
+              <figure class="ph" data-img><img src="https://images.unsplash.com/photo-1777331903190-341a3dd0441b?auto=format&amp;fit=crop&amp;w=1000&amp;q=72" alt="Una dentista conversa con su paciente en la consulta" loading="lazy" decoding="async"></figure>
+              <span class="card__shade"></span>
+            </div></div>
+          </li>
+          <li class="card" style="--i:1">
+            <div class="bezel"><div class="bezel__core">
+              <div class="card__body">
+                <h3>Técnicas avanzadas</h3>
+                <p>Trabajamos con procedimientos actuales para cuidar tus dientes con la mínima intervención necesaria.</p>
+              </div>
+              <figure class="ph" data-img><img src="https://images.unsplash.com/photo-1728342057953-94bfad8f0e7e?auto=format&amp;fit=crop&amp;w=1000&amp;q=72" alt="Sillón dental moderno en una consulta luminosa" loading="lazy" decoding="async"></figure>
+              <span class="card__shade"></span>
+            </div></div>
+          </li>
+          <li class="card" style="--i:2">
+            <div class="bezel"><div class="bezel__core">
+              <div class="card__body">
+                <h3>Atención personalizada</h3>
+                <p>Cada boca es distinta. Tu plan se diseña a tu medida y se ajusta contigo, no con una plantilla.</p>
+              </div>
+              <figure class="ph" data-img><img src="https://images.unsplash.com/photo-1785861084191-3600dfc2a6d6?auto=format&amp;fit=crop&amp;w=1000&amp;q=72" alt="Revisión dental a una paciente" loading="lazy" decoding="async"></figure>
+              <span class="card__shade"></span>
+            </div></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE DE TRATAMIENTOS -->
+  <div class="marquee" id="marquee" aria-label="Tratamientos: Ortodoncia, Endodoncia, Cirugía, Odontopediatría, Estética dental, Implantes y Periodoncia"
+    data-tooth="op:0;x:-0.9;y:0;s:0.4;ry:7.4">
+    <div class="marquee__row" aria-hidden="true">
+      <div class="marquee__track" data-mq>
+        <span class="marquee__item">Ortodoncia</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+        <span class="marquee__item">Endodoncia</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+        <span class="marquee__item">Cirugía</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+        <span class="marquee__item">Implantes</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+      </div>
+    </div>
+    <div class="marquee__row marquee__row--rev" aria-hidden="true">
+      <div class="marquee__track" data-mq>
+        <span class="marquee__item">Estética dental</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+        <span class="marquee__item">Odontopediatría</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+        <span class="marquee__item">Periodoncia</span><svg class="marquee__gem" viewBox="0 0 20 24"><polygon points="10,0 20,9 10,24" fill="#D6F1F8"/><polygon points="10,0 0,9 10,24" fill="#5B8A9A"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRATAMIENTOS -->
+  <section class="section" id="tratamientos" aria-labelledby="trat-title" data-tooth="op:0;x:-0.9;s:0.4">
+    <div class="wrap treat-grid">
+      <div class="treat-aside">
+        <h2 class="display h2" id="trat-title" data-split>Siete formas de cuidar tu boca.</h2>
+        <p class="lead" data-reveal>Cuéntanos qué te pasa y te orientamos, o recorre los tratamientos y abre el que te interese.</p>
+        <div class="finder bezel" data-reveal>
+          <div class="bezel__core">
+            <h3 id="finder-title">¿Qué necesitas?</h3>
+            <div class="chips" role="group" aria-labelledby="finder-title" id="finder-chips"></div>
+            <div class="finder__result" id="finder-result" aria-live="polite">
+              <p class="finder__hint">Elige una opción y te sugerimos el tratamiento que encaja.</p>
+            </div>
+            <p class="finder__note">Orientación general: no sustituye a un diagnóstico. Solo una exploración en la clínica puede confirmar qué necesitas.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="treat-list" id="treat-list"></div>
+        <noscript>
+          <ul class="noscript-list">
+            <li><strong>Ortodoncia:</strong> brackets convencionales o invisibles.</li>
+            <li><strong>Conservadora (endodoncia):</strong> salvar el diente en lugar de perderlo.</li>
+            <li><strong>Cirugía:</strong> extracciones, injertos óseos e implantes.</li>
+            <li><strong>Odontopediatría:</strong> revisiones cada 6 meses.</li>
+            <li><strong>Estética dental:</strong> blanqueamiento express, carillas y ácido hialurónico en labios.</li>
+            <li><strong>Implantes:</strong> titanio para coronas, puentes o dentaduras.</li>
+            <li><strong>Periodoncia:</strong> gingivitis y periodontitis.</li>
+          </ul>
+        </noscript>
+      </div>
+    </div>
+    <figure class="peek ph" id="peek" aria-hidden="true"><img alt="" id="peek-img"></figure>
+  </section>
+
+  <!-- IMPLANTES: vista explosionada guiada por el scroll -->
+  <section class="spot" id="implantes" aria-labelledby="impl-title">
+    <span class="tk" style="top:calc(.06 * (100% - 100vh) + 50vh)" data-tooth="x:0.34;y:0;s:0.95;ry:9.5;rx:0.12;rz:0;ex:0;op:1;gl:0.1" data-tooth-m="x:0;y:0.45;s:0.5;op:1"></span>
+    <span class="tk" style="top:calc(.4 * (100% - 100vh) + 50vh)" data-tooth="ex:1;ry:10.2;rx:0.24;s:0.8;y:-0.08" data-tooth-m="x:0;y:0.42;s:0.42"></span>
+    <span class="tk" style="top:calc(.66 * (100% - 100vh) + 50vh)" data-tooth="ex:1;ry:10.7;rx:0.18;s:0.8;y:-0.08" data-tooth-m="x:0;y:0.42;s:0.42"></span>
+    <span class="tk" style="top:calc(.94 * (100% - 100vh) + 50vh)" data-tooth="ex:0;ry:9.9;rx:0.1;s:0.92;y:0" data-tooth-m="x:0;y:0.45;s:0.5"></span>
+    <div class="spot__panel">
+      <span class="spot__big" aria-hidden="true">Ti</span>
+      <div class="wrap spot__grid">
+        <div class="spot__text">
+          <h2 class="display spot__title" id="impl-title" data-split>La raíz, de titanio.</h2>
+          <p class="lead" data-reveal>Un implante es un tornillo de titanio que se integra en el hueso y sustituye a la raíz del diente que falta.</p>
+          <ul class="parts" id="implant-parts">
+            <li class="part is-on"><strong>Corona</strong>La pieza visible: la que muerdes y enseñas al sonreír.</li>
+            <li class="part"><strong>Implante de titanio</strong>Ocupa el lugar de la raíz y se integra en el hueso.</li>
+            <li class="part"><strong>Soporte estable</strong>Sobre implantes se colocan coronas, puentes o dentaduras.</li>
+          </ul>
+          <a class="btn btn--primary magnetic" href="#cita" data-pick="implantes">Pide cita para implantes <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+        </div>
+        <div class="spot__art fallback-art" aria-hidden="true"><svg class="fb-tooth" viewBox="0 0 200 250" focusable="false"><use href="#tooth"/></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTÉTICA: la muela se ilumina -->
+  <section class="spot spot--short spot--right" id="estetica" aria-labelledby="est-title">
+    <span class="tk" style="top:calc(.08 * (100% - 100vh) + 50vh)" data-tooth="x:-0.36;y:0;s:0.95;ry:12.4;rx:0.06;rz:0.05;ex:0;gl:0.2;op:1" data-tooth-m="x:0;y:0.45;s:0.5"></span>
+    <span class="tk" style="top:calc(.5 * (100% - 100vh) + 50vh)" data-tooth="gl:1;ry:13.1;s:1.04;rz:0" data-tooth-m="s:0.54"></span>
+    <span class="tk" style="top:calc(.92 * (100% - 100vh) + 50vh)" data-tooth="gl:1;ry:13.7;s:1" data-tooth-m="s:0.52"></span>
+    <div class="spot__panel">
+      <span class="spot__big" aria-hidden="true">10′</span>
+      <div class="wrap spot__grid">
+        <div class="spot__text">
+          <h2 class="display spot__title" id="est-title" data-split>Blanco en ciclos de 10 minutos.</h2>
+          <p class="lead" data-reveal>Blanqueamiento express con un bajo porcentaje de peróxido, dentro de nuestra estética dental.</p>
+          <div class="glints" data-reveal>
+            <p class="glint"><b><span data-count="10">10</span><small>min</small></b><span>por ciclo</span></p>
+            <p class="glint"><b><span data-count="3">3</span><small>sesiones</small></b><span>como máximo</span></p>
+            <p class="glint"><b>Bajo<small>%</small></b><span>de peróxido</span></p>
+          </div>
+          <ul class="extras" data-reveal>
+            <li><strong>Carillas</strong> para mejorar la forma y el color de tus dientes.</li>
+            <li><strong>Ácido hialurónico</strong> para el aumento de labios.</li>
+          </ul>
+          <a class="btn btn--primary magnetic" href="#cita" data-pick="estetica">Pide cita de estética <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+        </div>
+        <div class="spot__art fallback-art" aria-hidden="true"><svg class="fb-tooth" viewBox="0 0 200 250" focusable="false"><use href="#tooth"/></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIMERA VISITA (clara; en escritorio se recorre en horizontal) -->
+  <!-- FOTOS DE EJEMPLO (Unsplash): sustituir por fotos reales de la clínica COISE antes de publicar. -->
+  <section class="light" id="primera-visita" aria-labelledby="visita-title" data-tooth="op:0;gl:0;ex:0;s:0.5;x:0;y:0;ry:14.5">
+    <div class="visit" id="visit">
+      <div class="visit__sticky">
+        <div class="wrap visit__head">
+          <h2 class="display h2 visit__title" id="visita-title" data-split>Tu primera visita, sin sorpresas.</h2>
+          <p class="lead" data-reveal>Cuatro momentos, a tu ritmo. Empezamos solo cuando lo ves claro.</p>
+        </div>
+        <ol class="visit__track" id="visit-track">
+          <li class="visit__step" data-reveal>
+            <figure class="ph"><img src="https://images.unsplash.com/photo-1704455306251-b4634215d98f?auto=format&amp;fit=crop&amp;w=900&amp;q=72" alt="Consulta dental luminosa preparada para recibir pacientes" loading="lazy" decoding="async"></figure>
+            <h3>Pides tu cita</h3><p>Por teléfono, por correo o con el formulario de esta página. Te confirmamos el día y la hora.</p>
+          </li>
+          <li class="visit__step" data-reveal>
+            <figure class="ph"><img src="https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&amp;fit=crop&amp;w=900&amp;q=72" alt="Exploración dental a un paciente" loading="lazy" decoding="async"></figure>
+            <h3>Hablamos y te exploramos</h3><p>Nos cuentas qué te preocupa y revisamos tu boca con calma, resolviendo tus dudas.</p>
+          </li>
+          <li class="visit__step" data-reveal>
+            <figure class="ph"><img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&amp;fit=crop&amp;w=900&amp;q=72" alt="Un dentista explica una imagen en pantalla a su paciente" loading="lazy" decoding="async"></figure>
+            <h3>Te explicamos las opciones</h3><p>Te proponemos un plan claro, con las alternativas posibles y lo que implica cada una.</p>
+          </li>
+          <li class="visit__step" data-reveal>
+            <figure class="ph"><img src="https://images.unsplash.com/photo-1670250492416-570b5b7343b1?auto=format&amp;fit=crop&amp;w=900&amp;q=72" alt="Detalle de una sonrisa cuidada" loading="lazy" decoding="async"></figure>
+            <h3>Decides tú</h3><p>Empezamos solo cuando tú lo ves claro. El ritmo del tratamiento lo marcamos contigo.</p>
+          </li>
+        </ol>
+        <div class="wrap visit__cta" data-reveal>
+          <a class="btn btn--dark magnetic" href="#cita">Pide tu cita <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+          <p>o escríbenos a <a href="mailto:info@coise.es">info@coise.es</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CITA -->
+  <section class="section booking" id="cita" aria-labelledby="cita-title" data-tooth="op:0">
+    <div class="wrap booking__grid">
+      <div class="booking__intro">
+        <h2 class="display booking__title" id="cita-title" data-split>Pide tu cita.</h2>
+        <p class="lead" data-reveal>Tres pasos rápidos. Si lo prefieres, llámanos y lo resolvemos al momento.</p>
+        <div class="booking__call" data-reveal>
+          <a href="tel:+34670440971">670 44 09 71</a>
+          <a href="tel:+34954074882">954 07 48 82</a>
+        </div>
+      </div>
+
+      <!--
+        DEMO: este formulario NO envía datos a ningún sitio (no hay backend).
+        Si se conectase a un backend real habría que: (1) recoger consentimiento
+        expreso conforme al RGPD y (2) publicar una política de privacidad, porque
+        se tratan datos de salud (categoría especial, art. 9 RGPD): responsable,
+        finalidad, base jurídica, conservación y derechos de las personas usuarias.
+      -->
+      <div class="form-card bezel" data-reveal>
+        <div class="bezel__core">
+        <form id="booking-form" novalidate aria-labelledby="cita-title">
+          <div id="form-flow">
+            <div class="progress" aria-hidden="true"><div class="progress__bar" id="progress-bar"></div></div>
+            <p class="progress__label" id="progress-label" aria-live="polite">Paso 1 de 3</p>
+
+            <fieldset class="form-step" data-step="1">
+              <legend>¿Qué tratamiento te interesa?</legend>
+              <div class="options" id="opt-treatments"></div>
+              <p class="error" id="err-treatment" role="alert"></p>
+            </fieldset>
+
+            <fieldset class="form-step" data-step="2" hidden>
+              <legend>¿Cuándo te viene mejor?</legend>
+              <div class="options" id="opt-days"></div>
+              <p class="error" id="err-day" role="alert"></p>
+              <span class="sub-legend" id="slot-label">Franja del día</span>
+              <div class="options" id="opt-slots" role="group" aria-labelledby="slot-label"></div>
+              <p class="error" id="err-slot" role="alert"></p>
+              <p class="form-note">Es una preferencia: la hora exacta te la confirmamos nosotros.</p>
+            </fieldset>
+
+            <fieldset class="form-step" data-step="3" hidden>
+              <legend>¿Cómo te contactamos?</legend>
+              <div class="field">
+                <label for="f-name">Nombre</label>
+                <input id="f-name" name="nombre" type="text" autocomplete="name" aria-describedby="err-name">
+                <p class="error" id="err-name" role="alert"></p>
+              </div>
+              <div class="field">
+                <label for="f-phone">Teléfono</label>
+                <input id="f-phone" name="telefono" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="err-phone">
+                <p class="error" id="err-phone" role="alert"></p>
+              </div>
+              <div class="field">
+                <label for="f-email">Correo electrónico</label>
+                <input id="f-email" name="email" type="email" autocomplete="email" aria-describedby="err-email">
+                <p class="error" id="err-email" role="alert"></p>
+              </div>
+              <div class="consent">
+                <input id="f-consent" name="consentimiento" type="checkbox" aria-describedby="err-consent">
+                <label for="f-consent">He leído y acepto la política de privacidad y consiento el tratamiento de mis datos para gestionar mi cita. <em>(Texto de ejemplo: la política real está pendiente de redactar.)</em></label>
+              </div>
+              <p class="error" id="err-consent" role="alert"></p>
+            </fieldset>
+
+            <div class="form-nav">
+              <button type="button" class="btn btn--text" id="btn-back" hidden>← Atrás</button>
+              <button type="button" class="btn btn--primary" id="btn-next">Siguiente <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></button>
+              <button type="submit" class="btn btn--primary" id="btn-submit" hidden>Enviar solicitud <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></button>
+            </div>
+          </div>
+
+          <div class="success" id="form-success" hidden tabindex="-1">
+            <h3>Gracias, esto es una demostración.</h3>
+            <p class="success__demo">Esta web es una demo: no hemos enviado ni guardado ningún dato y tu cita no está reservada.</p>
+            <p>Para pedir cita de verdad, llámanos:</p>
+            <div class="success__summary" id="success-summary"></div>
+            <div class="finder__btns">
+              <a class="btn btn--primary btn--sm" href="tel:+34670440971">670 44 09 71 <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+              <a class="btn btn--ghost btn--sm" href="tel:+34954074882">954 07 48 82</a>
+              <button type="button" class="btn btn--text" id="btn-reset">Volver a empezar</button>
+            </div>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="section contact" id="contacto" aria-labelledby="contacto-title" data-tooth="op:0;gl:0">
+    <div class="wrap contact__grid">
+      <div>
+        <h2 class="display contact__title" id="contacto-title" data-split>Ven a vernos.</h2>
+        <dl class="contact__list" data-reveal>
+          <div><dt>Dirección</dt><dd><address style="font-style:normal">Av. Emilio Lemos 6<br>41020 Sevilla</address></dd></div>
+          <div><dt>Teléfonos</dt><dd><a href="tel:+34670440971">670 44 09 71</a><br><a href="tel:+34954074882">954 07 48 82</a></dd></div>
+          <div><dt>Correo</dt><dd><a href="mailto:info@coise.es">info@coise.es</a></dd></div>
+        </dl>
+      </div>
+      <figure class="map bezel" data-reveal>
+        <div class="bezel__core">
+          <iframe title="Mapa de la zona de Av. Emilio Lemos, Sevilla" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-5.9275%2C37.3985%2C-5.9125%2C37.4060&amp;layer=mapnik"></iframe>
+          <figcaption class="map__caption">
+            <span>Mapa de la zona de la Av. Emilio Lemos (vista aproximada).</span>
+            <a href="https://www.google.com/maps/search/?api=1&amp;query=Av.+Emilio+Lemos+6%2C+41020+Sevilla" target="_blank" rel="noopener noreferrer">Abrir en Google Maps</a>
+          </figcaption>
+        </div>
+      </figure>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer__in">
+    <div class="footer__lockup">
+      <div class="footer__stage" id="footer-stage" data-tooth="at:end;follow:1;ry:18.6;rx:0.14;rz:0;ex:0;gl:0.5;op:1;wm:1">
+        <svg class="fb-tooth fallback-art" viewBox="0 0 200 250" aria-hidden="true" focusable="false"><use href="#tooth"/></svg>
+      </div>
+      <svg class="footer__word" id="footer-word" viewBox="-6 -6 642 112" role="img" aria-label="COISE">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path pathLength="1" d="M85.36 14.64A50 50 0 1 0 85.36 85.36"/>
+          <path pathLength="1" d="M156 50A50 50 0 1 0 256 50A50 50 0 1 0 156 50"/>
+          <path pathLength="1" d="M326 0V100"/>
+          <path pathLength="1" d="M470.17 8.93A42 25 0 1 0 438 50A42 25 0 1 1 405.83 91.07"/>
+          <path pathLength="1" d="M630 0H550V100H630M550 50H618"/>
+        </g>
+      </svg>
+      <p class="footer__claim">Tu sonrisa habla de nosotros.</p>
+      <div class="footer__cta">
+        <a class="btn btn--primary magnetic" href="#cita">Pide tu cita <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg></span></a>
+        <a class="btn btn--ghost magnetic" href="tel:+34954074882">954 07 48 82</a>
+      </div>
+    </div>
+    <div class="footer__row">
+      <p>Av. Emilio Lemos 6, 41020 Sevilla</p>
+      <p><a href="mailto:info@coise.es">info@coise.es</a> · <a href="tel:+34670440971">670 44 09 71</a></p>
+      <p><button type="button" class="linklike" id="open-legal">Aviso legal</button></p>
+    </div>
+  </div>
+</footer>
+
+<dialog id="legal-dialog" aria-labelledby="legal-title">
+  <h2 id="legal-title">Aviso legal</h2>
+  <p>Texto pendiente de redactar. Aquí irán los datos identificativos del titular y las condiciones de uso del sitio.</p>
+  <button type="button" class="btn btn--primary btn--sm" id="close-legal">Cerrar <span class="btn__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></button>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" crossorigin="anonymous"></script>
+
+<!-- =========================================================
+     A) Interfaz: datos, menú, tratamientos, selector y formulario.
+     No depende de ninguna librería externa.
+     ========================================================= -->
+<script>
+(() => {
+  "use strict";
+
+  const root = document.documentElement;
+  const RM = root.classList.contains("rm");
+  const HAS_GSAP = !!(window.gsap && window.ScrollTrigger);
+  const MOTION = HAS_GSAP && !RM;
+  if (!MOTION) root.classList.add("no-motion");
+
+  /* Espacio compartido con el script de movimiento y el módulo 3D */
+  let resolve3d;
+  const COISE = window.COISE = {
+    RM, HAS_GSAP, MOTION,
+    FINE_POINTER: window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    ready3d: new Promise((r) => { resolve3d = r; }),
+    resolve3d: (ok) => resolve3d(ok),
+    tooth: null,
+    lenis: null
+  };
+
+  /* =========================================================
+     Datos reales de la clínica
+     FOTOS DE EJEMPLO (Unsplash): sustituir por fotos reales de COISE.
+     ========================================================= */
+  const IMG = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=72`;
+  const TREATMENTS = [
+    { id: "ortodoncia", name: "Ortodoncia", img: IMG("photo-1694675236489-d73651370688"), alt: "Alineadores dentales transparentes",
+      sum: "Dientes bien alineados, con brackets convencionales o invisibles.",
+      text: "Mejoramos la posición de tus dientes y la forma en que encajan al morder. Puedes elegir entre brackets convencionales o invisibles, según lo que mejor se adapte a tu caso y a tu día a día." },
+    { id: "conservadora", name: "Conservadora (endodoncia)", img: IMG("photo-1777793389944-f7165259a05c"), alt: "Modelo de un diente en corte que muestra su interior",
+      sum: "Salvar el diente en lugar de perderlo.",
+      text: "Desinfectamos y limpiamos los conductos del diente afectado para poder conservarlo y que siga cumpliendo su función. Suele ser la respuesta cuando una caries profunda o una infección llega al interior de la muela." },
+    { id: "cirugia", name: "Cirugía", img: IMG("photo-1657470179447-0f5aa16daa91"), alt: "Un dentista trabaja con su paciente",
+      sum: "Cirugía bucal: extracciones, injertos óseos e implantes.",
+      text: "Realizamos cirugía bucal cuando es necesaria: extracciones, injertos óseos y colocación de implantes. Te explicamos el procedimiento antes de empezar y planificamos contigo el después." },
+    { id: "odontopediatria", name: "Odontopediatría", img: IMG("photo-1784460469850-80838868f4d2"), alt: "Una joven sonríe",
+      sum: "Prevención y cuidado para niños y adolescentes.",
+      text: "Cuidamos la boca de los más jóvenes con un enfoque preventivo y cercano. Recomendamos revisiones cada 6 meses para detectar a tiempo cualquier problema y crear buenos hábitos desde pequeños." },
+    { id: "estetica", name: "Estética dental", img: IMG("photo-1769559893692-c6d0623bf8e4"), alt: "Primer plano de una sonrisa",
+      sum: "Blanqueamiento, carillas y aumento de labios.",
+      text: "Incluye blanqueamiento (también el express: ciclos de 10 minutos, hasta 3 sesiones y con un bajo porcentaje de peróxido), carillas y aumento de labios con ácido hialurónico." },
+    { id: "implantes", name: "Implantes", img: IMG("photo-1593022356769-11f762e25ed9"), alt: "Maqueta de un implante dental con su corona",
+      sum: "Un tornillo de titanio que sustituye la raíz del diente.",
+      text: "El implante es un tornillo de titanio que se integra en el hueso y sirve de soporte para coronas, puentes o dentaduras. Es una solución estable para recuperar dientes que faltan." },
+    { id: "periodoncia", name: "Periodoncia", img: IMG("photo-1664529845836-433c172142ca"), alt: "Revisión de las encías",
+      sum: "Encías sanas para que los dientes duren.",
+      text: "Tratamos la gingivitis y la periodontitis, las enfermedades que afectan a las encías y al soporte del diente. Detectarlas pronto marca la diferencia en su evolución." }
+  ];
+  COISE.TREATMENTS = TREATMENTS;
+
+  const NEEDS = [
+    { label: "Me duele una muela", to: "conservadora", why: "Un dolor de muela a menudo tiene que ver con el interior del diente, y ahí entra la endodoncia." },
+    { label: "Quiero dientes más blancos", to: "estetica", why: "El blanqueamiento forma parte de la estética dental, con opción de sesiones express." },
+    { label: "Tengo los dientes torcidos", to: "ortodoncia", why: "La ortodoncia recoloca los dientes, con brackets convencionales o invisibles." },
+    { label: "Me sangran las encías", to: "periodoncia", why: "El sangrado de encías puede ser señal de gingivitis, que se trata en periodoncia." },
+    { label: "Me falta un diente", to: "implantes", why: "Un implante de titanio puede sostener una corona que sustituya al diente perdido." },
+    { label: "Revisión para mi hijo/a", to: "odontopediatria", why: "Las revisiones cada 6 meses ayudan a prevenir problemas en niños y adolescentes." },
+    { label: "Me tienen que sacar una muela", to: "cirugia", why: "Las extracciones se realizan dentro de la cirugía bucal." }
+  ];
+
+  const DAYS = ["Lo antes posible", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+  const SLOTS = ["Mañana", "Tarde"];
+
+  /* =========================================================
+     Utilidades
+     ========================================================= */
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+  const byId = (id) => TREATMENTS.find((t) => t.id === id);
+  const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12L12 4M5.5 4H12v6.5"/></svg>';
+
+  function el(tag, attrs = {}, children = []) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") node.className = v;
+      else if (k === "text") node.textContent = v;
+      else node.setAttribute(k, v);
+    }
+    children.forEach((c) => node.append(c));
+    return node;
+  }
+  const btnIcon = () => { const s = el("span", { class: "btn__ic", "aria-hidden": "true" }); s.innerHTML = ARROW; return s; };
+  /* Ejecuta un módulo sin que su fallo rompa el resto de la página. */
+  function safe(name, fn) {
+    try { return fn(); } catch (err) { console.error(`[COISE] Error en «${name}»:`, err); return null; }
+  }
+  COISE.$ = $; COISE.$$ = $$; COISE.el = el; COISE.safe = safe;
+
+  /* =========================================================
+     Cabecera y menú móvil
+     ========================================================= */
+  safe("cabecera", () => {
+    const header = $(".site-header"), toggle = $(".nav-toggle"), nav = $("#nav");
+    if (!header || !toggle || !nav) throw new Error("Faltan elementos de la cabecera");
+    const setOpen = (open) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+      nav.classList.toggle("is-open", open);
+      header.classList.toggle("menu-open", open);
+      if (COISE.lenis) open ? COISE.lenis.stop() : COISE.lenis.start();
+    };
+    COISE.closeMenu = () => setOpen(false);
+    toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
+    nav.addEventListener("click", (e) => { if (e.target.closest("a")) setOpen(false); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && nav.classList.contains("is-open")) { setOpen(false); toggle.focus(); }
+    });
+    // Sin Lenis, la cabecera reacciona al scroll nativo
+    let last = 0;
+    const onScroll = (y) => {
+      header.classList.toggle("is-scrolled", y > 12);
+      const menuOpen = nav.classList.contains("is-open");
+      header.classList.toggle("is-hidden", !menuOpen && y > 240 && y > last + 2);
+      if (y < last - 2 || y < 240) header.classList.remove("is-hidden");
+      last = y;
+    };
+    COISE.onScrollHeader = onScroll;
+    onScroll(window.scrollY);
+    window.addEventListener("scroll", () => { if (!COISE.lenis) onScroll(window.scrollY); }, { passive: true });
+    header.addEventListener("focusin", () => header.classList.remove("is-hidden"));
+  });
+
+  /* =========================================================
+     Acordeón de tratamientos
+     ========================================================= */
+  const accordion = {};
+  safe("tratamientos", () => {
+    const list = $("#treat-list");
+    if (!list) throw new Error("Falta #treat-list");
+    TREATMENTS.forEach((t) => {
+      const panelId = `panel-${t.id}`;
+      const btn = el("button", { class: "treat__btn", type: "button", "aria-expanded": "false", "aria-controls": panelId, id: `btn-${t.id}`, "data-cursor": "Abrir", "data-peek": t.img }, [
+        el("span", {}, [el("span", { class: "treat__name", text: t.name }), el("span", { class: "treat__sum", text: t.sum })]),
+        el("span", { class: "treat__icon", "aria-hidden": "true" })
+      ]);
+      const cta = el("a", { class: "btn btn--primary btn--sm", href: "#cita", "data-pick": t.id }, [document.createTextNode("Pedir cita para esto"), btnIcon()]);
+      const img = el("img", { src: t.img, alt: t.alt, loading: "lazy", decoding: "async" });
+      const panel = el("div", { class: "treat__panel", id: panelId, role: "region", "aria-labelledby": `btn-${t.id}` }, [
+        el("div", {}, [el("div", { class: "treat__content" }, [el("div", {}, [el("p", { text: t.text }), cta]), el("figure", { class: "ph" }, [img])])])
+      ]);
+      list.append(el("article", { class: "treat", id: `t-${t.id}` }, [btn, panel]));
+      btn.addEventListener("click", () => accordion.toggle(t.id));
+    });
+    accordion.toggle = (id, force) => {
+      const btn = $(`#btn-${id}`);
+      if (!btn) return;
+      const open = typeof force === "boolean" ? force : btn.getAttribute("aria-expanded") !== "true";
+      btn.setAttribute("aria-expanded", String(open));
+      btn.setAttribute("data-cursor", open ? "Cerrar" : "Abrir");
+      btn.closest(".treat")?.classList.toggle("is-open", open);
+      COISE.onAccordion?.(btn, open);
+      // La altura de la página cambia: avisamos a ScrollTrigger cuando termina la transición
+      if (window.ScrollTrigger) setTimeout(() => window.ScrollTrigger.refresh(), 760);
+    };
+    accordion.suggest = (id) => $$(".treat").forEach((c) => c.classList.toggle("is-suggested", c.id === `t-${id}`));
+  });
+
+  /* =========================================================
+     Selector «¿Qué necesitas?»
+     ========================================================= */
+  const booking = {};
+  safe("selector", () => {
+    const chips = $("#finder-chips"), result = $("#finder-result");
+    if (!chips || !result) throw new Error("Faltan elementos del selector");
+    NEEDS.forEach((n, i) => chips.append(el("button", { class: "chip", type: "button", "aria-pressed": "false", "data-i": String(i), text: n.label })));
+    chips.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      const need = NEEDS[Number(chip.dataset.i)];
+      const t = need && byId(need.to);
+      if (!t) { console.error("[COISE] Opción del selector sin tratamiento", need); return; }
+      $$(".chip", chips).forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+      accordion.suggest?.(t.id);
+      const see = el("a", { class: "btn btn--text", href: `#t-${t.id}`, text: "Ver el tratamiento" });
+      see.addEventListener("click", () => accordion.toggle?.(t.id, true));
+      const book = el("a", { class: "btn btn--primary btn--sm", href: "#cita", "data-pick": t.id }, [document.createTextNode("Pide tu cita"), btnIcon()]);
+      result.replaceChildren(el("div", { class: "finder__card" }, [
+        el("div", {}, [el("h4", { text: t.name }), el("p", { text: need.why })]),
+        el("div", { class: "finder__btns" }, [book, see])
+      ]));
+    });
+  });
+
+  /* Cualquier enlace con data-pick preselecciona el tratamiento en el formulario. */
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-pick]");
+    if (a && booking.select) booking.select(a.dataset.pick);
+  });
+
+  /* =========================================================
+     Formulario multipaso (DEMO: no envía nada)
+     ========================================================= */
+  safe("formulario", () => {
+    const form = $("#booking-form");
+    const steps = form ? $$(".form-step", form) : [];
+    const next = $("#btn-next"), back = $("#btn-back"), submit = $("#btn-submit");
+    const bar = $("#progress-bar"), label = $("#progress-label");
+    const flow = $("#form-flow"), success = $("#form-success");
+    const optT = $("#opt-treatments"), optD = $("#opt-days"), optS = $("#opt-slots");
+    if (!form || steps.length !== 3 || !next || !back || !submit || !bar || !label || !flow || !success || !optT || !optD || !optS) {
+      throw new Error("Faltan elementos del formulario");
+    }
+    const radio = (container, name, value, text, idx) => {
+      container.append(el("div", { class: "opt" }, [el("input", { type: "radio", name, value, id: `${name}-${idx}` }), el("span", { text })]));
+    };
+    TREATMENTS.forEach((t, i) => radio(optT, "tratamiento", t.id, t.name, i));
+    radio(optT, "tratamiento", "no-se", "No lo sé, quiero una revisión", TREATMENTS.length);
+    DAYS.forEach((d, i) => radio(optD, "dia", d, d, i));
+    SLOTS.forEach((s, i) => radio(optS, "franja", s, s, i));
+
+    let current = 0;
+    const setError = (id, msg, input) => {
+      const box = $(`#${id}`);
+      if (box) box.textContent = msg;
+      if (input) { if (msg) input.setAttribute("aria-invalid", "true"); else input.removeAttribute("aria-invalid"); }
+    };
+    const checked = (name) => $(`input[name="${name}"]:checked`, form);
+    const validators = [
+      () => {
+        if (!checked("tratamiento")) { setError("err-treatment", "Elige un tratamiento o la opción de revisión."); return $("#opt-treatments input"); }
+        setError("err-treatment", ""); return null;
+      },
+      () => {
+        let first = null;
+        if (!checked("dia")) { setError("err-day", "Elige el día que prefieres."); first = $("#opt-days input"); } else setError("err-day", "");
+        if (!checked("franja")) { setError("err-slot", "Elige mañana o tarde."); first = first || $("#opt-slots input"); } else setError("err-slot", "");
+        return first;
+      },
+      () => {
+        const name = $("#f-name"), phone = $("#f-phone"), email = $("#f-email"), consent = $("#f-consent");
+        let first = null;
+        const fail = (id, msg, input) => { setError(id, msg, input); first = first || input; };
+        if (name.value.trim().length < 2) fail("err-name", "Escribe tu nombre.", name); else setError("err-name", "", name);
+        const digits = phone.value.replace(/[\s.-]/g, "");
+        if (!/^(\+34|0034)?[6-9]\d{8}$/.test(digits)) fail("err-phone", "Escribe un teléfono español válido de 9 cifras.", phone); else setError("err-phone", "", phone);
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) fail("err-email", "Escribe un correo válido, por ejemplo nombre@correo.es.", email); else setError("err-email", "", email);
+        if (!consent.checked) fail("err-consent", "Para continuar necesitamos que aceptes la política de privacidad.", consent); else setError("err-consent", "", consent);
+        return first;
+      }
+    ];
+    const show = (i, focus = true) => {
+      current = i;
+      steps.forEach((s, k) => { s.hidden = k !== i; });
+      bar.style.width = `${((i + 1) / steps.length) * 100}%`;
+      label.textContent = `Paso ${i + 1} de ${steps.length}`;
+      back.hidden = i === 0;
+      next.hidden = i === steps.length - 1;
+      submit.hidden = i !== steps.length - 1;
+      if (focus) {
+        const legend = $("legend", steps[i]);
+        if (legend) { legend.setAttribute("tabindex", "-1"); legend.focus({ preventScroll: true }); }
+      }
+      if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+    };
+    next.addEventListener("click", () => {
+      const bad = validators[current]();
+      if (bad) { bad.focus(); return; }
+      show(current + 1);
+    });
+    back.addEventListener("click", () => show(Math.max(0, current - 1)));
+    form.addEventListener("submit", (e) => {
+      e.preventDefault(); // DEMO: nunca se envía nada.
+      const bad = validators[2]();
+      if (bad) { bad.focus(); return; }
+      const t = checked("tratamiento").value;
+      const tName = t === "no-se" ? "Revisión (sin decidir)" : byId(t)?.name ?? t;
+      $("#success-summary").replaceChildren(
+        el("p", { text: `Tratamiento: ${tName}` }),
+        el("p", { text: `Preferencia: ${checked("dia").value}, ${checked("franja").value.toLowerCase()}` })
+      );
+      flow.hidden = true;
+      success.hidden = false;
+      success.focus();
+    });
+    $("#btn-reset")?.addEventListener("click", () => {
+      form.reset();
+      $$("input[aria-invalid]", form).forEach((i) => i.removeAttribute("aria-invalid"));
+      $$(".error", form).forEach((x) => { x.textContent = ""; });
+      success.hidden = true; flow.hidden = false;
+      show(0, false);
+    });
+    booking.select = (id) => {
+      const input = $(`input[name="tratamiento"][value="${CSS.escape(id)}"]`, form);
+      if (!input) return;
+      if (flow.hidden) $("#btn-reset")?.click();
+      input.checked = true;
+      setError("err-treatment", "");
+      show(0, false);
+    };
+    form.addEventListener("input", (e) => {
+      const t = e.target;
+      if (t.matches('input[type="radio"]')) setError({ tratamiento: "err-treatment", dia: "err-day", franja: "err-slot" }[t.name], "");
+      if (t.id === "f-consent" && t.checked) setError("err-consent", "", t);
+    });
+    show(0, false);
+  });
+
+  /* =========================================================
+     Aviso legal
+     ========================================================= */
+  safe("aviso legal", () => {
+    const dlg = $("#legal-dialog"), open = $("#open-legal"), close = $("#close-legal");
+    if (!dlg || !open || !close) throw new Error("Faltan elementos del aviso legal");
+    if (typeof dlg.showModal !== "function") { open.addEventListener("click", () => alert("Aviso legal: texto pendiente de redactar.")); return; }
+    open.addEventListener("click", () => { dlg.showModal(); COISE.lenis?.stop(); });
+    close.addEventListener("click", () => dlg.close());
+    dlg.addEventListener("close", () => COISE.lenis?.start());
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  });
+
+  /* =========================================================
+     Marquee: duplicar cada pista para un bucle sin costuras
+     ========================================================= */
+  safe("marquee", () => {
+    $$("[data-mq]").forEach((track) => {
+      const clone = track.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      clone.removeAttribute("data-mq");
+      track.parentNode.append(clone);
+    });
+  });
+
+  /* Si el módulo 3D no llega a ejecutarse (navegador antiguo, CDN caído), respaldo plano. */
+  setTimeout(() => {
+    if (!root.classList.contains("has-3d") && !root.classList.contains("no-3d")) {
+      root.classList.add("no-3d");
+      COISE.resolve3d(false);
+    }
+  }, 6000);
+})();
+</script>
+
+<!-- =========================================================
+     B) Movimiento: Lenis, GSAP/ScrollTrigger, cursor, carga.
+     Si falta GSAP o hay movimiento reducido, todo queda visible y estático.
+     ========================================================= -->
+<script>
+(() => {
+  "use strict";
+  const C = window.COISE;
+  if (!C) return;
+  const { $, $$, el, safe } = C;
+  const root = document.documentElement;
+  const loader = $("#loader");
+
+  if (!C.MOTION) {
+    loader?.remove();
+    root.classList.add("is-ready");
+    $("#implant-parts")?.classList.add("all-on");
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
+  /* ---------- Scroll suave (Lenis) ---------- */
+  safe("lenis", () => {
+    if (!window.Lenis) throw new Error("Lenis no se ha cargado (se usa el scroll nativo)");
+    const lenis = new Lenis({ lerp: 0.095, smoothWheel: true, wheelMultiplier: 0.95 });
+    C.lenis = lenis;
+    lenis.on("scroll", (e) => {
+      ScrollTrigger.update();
+      C.onScrollHeader?.(e.scroll);
+    });
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+    lenis.stop(); // hasta que termine la carga
+  });
+
+  /* Enlaces internos: desplazamiento suave y foco en el destino */
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || a.classList.contains("skip")) return;
+    const id = a.getAttribute("href");
+    if (id.length < 2) return;
+    const target = document.getElementById(id.slice(1));
+    if (!target) return;
+    e.preventDefault();
+    C.closeMenu?.();
+    const done = () => {
+      if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+    };
+    if (C.lenis) { C.lenis.start(); C.lenis.scrollTo(target, { offset: id === "#inicio" ? 0 : -8, duration: 1.6, onComplete: done }); }
+    else { target.scrollIntoView({ behavior: "smooth" }); done(); }
+    history.replaceState(null, "", id);
+  });
+
+  /* ---------- Partir texto en palabras con máscara ---------- */
+  function splitWords(node) {
+    const words = node.textContent.trim().split(/\s+/);
+    node.replaceChildren(...words.flatMap((w, i) => {
+      const m = el("span", { class: "m" }, [el("span", { class: "mi", text: w })]);
+      return i < words.length - 1 ? [m, document.createTextNode(" ")] : [m];
+    }));
+    return $$(".mi", node);
+  }
+
+  /* ---------- Héroe: preparar la entrada (se lanza al acabar la carga) ---------- */
+  const heroWords = safe("héroe", () => {
+    const span = $("[data-split-hero]");
+    const words = span ? splitWords(span) : [];
+    gsap.set(words, { yPercent: 115 });
+    gsap.set("[data-hero-fade]", { opacity: 0, y: 26 });
+    return words;
+  }) || [];
+
+  function intro() {
+    gsap.to(heroWords, { yPercent: 0, duration: 1.3, ease: "expo.out", stagger: 0.07, delay: 0.05 });
+    gsap.to("[data-hero-fade]", { opacity: 1, y: 0, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.35 });
+    C.tooth?.playIntro?.();
+    root.classList.add("is-ready");
+    C.lenis?.start();
+    // Salida del héroe al hacer scroll (fijado con CSS sticky)
+    gsap.timeline({ scrollTrigger: { trigger: "#inicio", start: "top top", end: "bottom bottom", scrub: 0.6 } })
+      .to(heroWords, { yPercent: -120, ease: "power2.in", stagger: 0.03, duration: 0.6 }, 0.25)
+      .to("[data-hero-fade]", { opacity: 0, y: -40, ease: "power2.in", duration: 0.5 }, 0.2)
+      .to(".hero__cue", { opacity: 0, duration: 0.2 }, 0)
+      .to({}, { duration: 0.3 });
+  }
+
+  /* ---------- Pantalla de carga ---------- */
+  safe("carga", () => {
+    if (!loader) { intro(); return; }
+    const paths = $$(".loader__mark path, .loader__mark polygon", loader);
+    const num = $("#loader-num"), bar = $("#loader-bar");
+    const prog = { v: 0 };
+    const draw = () => { num.textContent = String(Math.round(prog.v * 100)); bar.style.transform = `scaleX(${prog.v})`; };
+    gsap.to(paths, { strokeDashoffset: 0, duration: 1.6, ease: "power2.inOut", stagger: 0.08 });
+    const fill = gsap.to(prog, { v: 0.82, duration: 1.8, ease: "power2.out", onUpdate: draw });
+    const fonts = document.fonts?.ready ?? Promise.resolve();
+    const timeout = new Promise((r) => setTimeout(r, 5000));
+    const minTime = new Promise((r) => setTimeout(r, 1500));
+    Promise.all([Promise.race([Promise.all([C.ready3d, fonts]), timeout]), minTime]).then(() => {
+      fill.kill();
+      gsap.timeline()
+        .to(prog, { v: 1, duration: 0.45, ease: "power2.inOut", onUpdate: draw })
+        .to(".loader__in", { y: -30, opacity: 0, duration: 0.6, ease: "power3.in" }, "+=0.1")
+        .to(loader, { clipPath: "inset(0 0 100% 0)", duration: 1.1, ease: "expo.inOut" }, "-=0.25")
+        .add(intro, "-=0.7")
+        .add(() => loader.remove());
+    });
+  });
+
+  /* ---------- Entradas de texto con máscara ---------- */
+  safe("revelados", () => {
+    $$("[data-split]").forEach((node) => {
+      const words = splitWords(node);
+      gsap.set(words, { yPercent: 115 });
+      ScrollTrigger.create({
+        trigger: node, start: "top 88%", once: true,
+        onEnter: () => gsap.to(words, { yPercent: 0, duration: 1.2, ease: "expo.out", stagger: 0.06 })
+      });
+    });
+    gsap.set("[data-reveal]", { opacity: 0, y: 36 });
+    ScrollTrigger.batch("[data-reveal]", {
+      start: "top 90%", once: true,
+      onEnter: (batch) => gsap.to(batch, { opacity: 1, y: 0, duration: 1.1, ease: "expo.out", stagger: 0.09, overwrite: true })
+    });
+  });
+
+  /* ---------- Fotos: revelado con máscara y parallax ---------- */
+  safe("fotos", () => {
+    $$("[data-img]").forEach((fig) => {
+      const img = $("img", fig);
+      gsap.fromTo(fig, { clipPath: "inset(18% 0 18% 0)" }, { clipPath: "inset(0% 0 0% 0)", ease: "none", scrollTrigger: { trigger: fig, start: "top bottom", end: "center 55%", scrub: 0.6 } });
+      if (img) gsap.fromTo(img, { scale: 1.3, yPercent: -6 }, { scale: 1.05, yPercent: 6, ease: "none", scrollTrigger: { trigger: fig, start: "top bottom", end: "bottom top", scrub: true } });
+    });
+  });
+
+  /* ---------- Frase: las palabras se encienden con el scroll ---------- */
+  safe("frase", () => {
+    const stmt = $("#statement");
+    if (!stmt) return;
+    const words = stmt.textContent.trim().split(/\s+/);
+    stmt.replaceChildren(...words.flatMap((w, i) => {
+      const s = el("span", { class: "sw", text: w });
+      return i < words.length - 1 ? [s, document.createTextNode(" ")] : [s];
+    }));
+    gsap.fromTo("#statement .sw", { opacity: 0.12 }, {
+      opacity: 1, ease: "none", stagger: 0.1,
+      scrollTrigger: { trigger: stmt, start: "top 80%", end: "bottom 40%", scrub: true }
+    });
+  });
+
+  /* ---------- Tarjetas apiladas: la de atrás se hunde ---------- */
+  safe("tarjetas", () => {
+    const cards = $$("#stack .card");
+    gsap.matchMedia().add("(min-width: 861px)", () => cards.forEach((card, i) => {
+      const nextCard = cards[i + 1];
+      if (!nextCard) return;
+      const core = $(".bezel", card), shade = $(".card__shade", card);
+      gsap.timeline({ scrollTrigger: { trigger: nextCard, start: "top bottom", end: "top 30%", scrub: true } })
+        .to(core, { scale: 0.92, ease: "none" }, 0)
+        .to(shade, { opacity: 0.55, ease: "none" }, 0);
+    }));
+  });
+
+  /* ---------- Marquee que reacciona a la velocidad del scroll ---------- */
+  safe("marquee", () => {
+    const rows = $$(".marquee__row");
+    const anims = $$(".marquee__track").flatMap((t) => t.getAnimations ? t.getAnimations() : []);
+    if (!rows.length) return;
+    const skew = gsap.quickTo(rows, "skewX", { duration: 0.6, ease: "power3.out" });
+    let rate = 1;
+    const tick = () => {
+      const v = C.lenis ? C.lenis.velocity : 0;
+      const target = 1 + Math.min(Math.abs(v) * 0.12, 5);
+      rate += (target - rate) * 0.1;
+      const dir = v < -0.5 ? -1 : 1;
+      anims.forEach((a) => { a.playbackRate = rate * dir; });
+      skew(gsap.utils.clamp(-10, 10, -v * 0.35));
+    };
+    ScrollTrigger.create({
+      trigger: "#marquee", start: "top bottom", end: "bottom top",
+      onToggle: (self) => { if (self.isActive) gsap.ticker.add(tick); else gsap.ticker.remove(tick); }
+    });
+  });
+
+  /* ---------- Contadores (solo cifras reales) ---------- */
+  safe("contadores", () => {
+    $$("[data-count]").forEach((node) => {
+      const target = Number(node.dataset.count);
+      if (!Number.isFinite(target)) return;
+      const obj = { v: 0 };
+      node.textContent = "0";
+      ScrollTrigger.create({
+        trigger: node, start: "top 92%", once: true,
+        onEnter: () => gsap.to(obj, { v: target, duration: 1.8, ease: "power3.out", onUpdate: () => { node.textContent = String(Math.round(obj.v)); } })
+      });
+    });
+  });
+
+  /* ---------- Implantes: resalta cada parte según la vista explosionada ---------- */
+  safe("implantes", () => {
+    const parts = $$("#implant-parts .part");
+    if (parts.length !== 3) return;
+    ScrollTrigger.create({
+      trigger: "#implantes", start: "top top", end: "bottom bottom",
+      onUpdate: (self) => {
+        const p = self.progress;
+        const idx = p < 0.3 ? 0 : p < 0.62 ? 1 : 2;
+        parts.forEach((li, i) => li.classList.toggle("is-on", i === idx));
+      }
+    });
+    gsap.fromTo("#implantes .spot__big", { xPercent: 30 }, { xPercent: -10, ease: "none", scrollTrigger: { trigger: "#implantes", start: "top bottom", end: "bottom top", scrub: true } });
+    gsap.fromTo("#estetica .spot__big", { xPercent: -30 }, { xPercent: 10, ease: "none", scrollTrigger: { trigger: "#estetica", start: "top bottom", end: "bottom top", scrub: true } });
+  });
+
+  /* ---------- Primera visita: recorrido horizontal fijado (escritorio) ---------- */
+  safe("visita", () => {
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 961px)", () => {
+      const section = $("#visit"), track = $("#visit-track");
+      if (!section || !track) return;
+      root.classList.add("is-hscroll");
+      const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
+      const setH = () => { section.style.height = `${dist() + window.innerHeight}px`; };
+      setH();
+      ScrollTrigger.addEventListener("refreshInit", setH);
+      const tween = gsap.to(track, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: section, start: "top top", end: "bottom bottom", scrub: 0.8, invalidateOnRefresh: true } });
+      return () => {
+        ScrollTrigger.removeEventListener("refreshInit", setH);
+        tween.scrollTrigger?.kill(); tween.kill();
+        gsap.set(track, { x: 0 });
+        section.style.height = "";
+        root.classList.remove("is-hscroll");
+      };
+    });
+  });
+
+  /* ---------- Sección clara: se abre como una lámina al entrar ---------- */
+  safe("lámina clara", () => {
+    gsap.fromTo("#primera-visita", { clipPath: "inset(0% 5% 0% 5% round 48px)" }, {
+      clipPath: "inset(0% 0% 0% 0% round 0px)", ease: "none",
+      scrollTrigger: { trigger: "#primera-visita", start: "top bottom", end: "top 15%", scrub: true }
+    });
+  });
+
+  /* ---------- Pie: el logotipo se dibuja trazo a trazo ---------- */
+  safe("pie", () => {
+    const paths = $$("#footer-word path");
+    if (!paths.length) return;
+    gsap.set(paths, { strokeDasharray: 1, strokeDashoffset: 1 });
+    gsap.to(paths, { strokeDashoffset: 0, ease: "none", stagger: 0.12, scrollTrigger: { trigger: ".site-footer", start: "top 75%", end: "top 5%", scrub: 0.8 } });
+  });
+
+  /* ---------- Cursor personalizado ---------- */
+  safe("cursor", () => {
+    if (!C.FINE_POINTER) return;
+    const cur = $("#cursor"), label = $("#cursor-label");
+    if (!cur) return;
+    root.classList.add("has-cursor");
+    const dot = $(".cursor__dot", cur), ring = $(".cursor__ring", cur);
+    const dx = gsap.quickTo(dot, "x", { duration: 0.08, ease: "none" }), dy = gsap.quickTo(dot, "y", { duration: 0.08, ease: "none" });
+    const rx = gsap.quickTo(ring, "x", { duration: 0.5, ease: "power3.out" }), ry = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3.out" });
+    gsap.set([dot, ring], { x: innerWidth / 2, y: innerHeight / 2 });
+    cur.classList.add("is-hidden");
+    window.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      cur.classList.remove("is-hidden");
+      dx(e.clientX); dy(e.clientY); rx(e.clientX); ry(e.clientY);
+    }, { passive: true });
+    document.addEventListener("mouseleave", () => cur.classList.add("is-hidden"));
+    window.addEventListener("pointerdown", () => cur.classList.add("is-down"));
+    window.addEventListener("pointerup", () => cur.classList.remove("is-down"));
+    document.addEventListener("mouseover", (e) => {
+      const t = e.target.closest("a, button, [data-cursor], input, label, iframe");
+      const lab = t?.getAttribute?.("data-cursor");
+      cur.classList.toggle("is-label", !!lab);
+      cur.classList.toggle("is-link", !!t && !lab && !t.matches("input, iframe"));
+      cur.classList.toggle("is-hidden", !!t && t.matches("iframe, input[type='text'], input[type='tel'], input[type='email']"));
+      if (lab) label.textContent = lab;
+    });
+  });
+
+  /* ---------- Imagen que sigue al cursor en la lista de tratamientos ---------- */
+  safe("peek", () => {
+    if (!C.FINE_POINTER) return;
+    const peek = $("#peek"), img = $("#peek-img"), list = $("#treat-list");
+    if (!peek || !img || !list) return;
+    C.TREATMENTS.forEach((t) => { const i = new Image(); i.src = t.img; });
+    const px = gsap.quickTo(peek, "x", { duration: 0.7, ease: "power3.out" }), py = gsap.quickTo(peek, "y", { duration: 0.7, ease: "power3.out" });
+    const pr = gsap.quickTo(peek, "rotation", { duration: 0.9, ease: "power3.out" });
+    let lastX = 0, shown = false;
+    list.addEventListener("pointermove", (e) => {
+      px(e.clientX + 40); py(e.clientY);
+      pr(gsap.utils.clamp(-12, 12, (e.clientX - lastX) * 0.6)); lastX = e.clientX;
+    });
+    const hide = () => { if (!shown) return; shown = false; gsap.to(peek, { opacity: 0, scale: 0.6, duration: 0.35, ease: "power3.out", onComplete: () => gsap.set(peek, { visibility: "hidden" }) }); };
+    C.onAccordion = (btn, open) => {
+      if (open) hide();
+      const label = $("#cursor-label"), cur = $("#cursor");
+      if (label && cur?.classList.contains("is-label") && btn.matches(":hover")) label.textContent = btn.dataset.cursor;
+    };
+    list.addEventListener("pointerover", (e) => {
+      const btn = e.target.closest("[data-peek]");
+      if (!btn || btn.getAttribute("aria-expanded") === "true") { hide(); return; }
+      if (img.getAttribute("src") !== btn.dataset.peek) img.setAttribute("src", btn.dataset.peek);
+      if (!shown) { shown = true; gsap.set(peek, { visibility: "visible", x: e.clientX + 40, y: e.clientY }); gsap.to(peek, { opacity: 1, scale: 1, duration: 0.6, ease: "expo.out" }); }
+    });
+    list.addEventListener("pointerleave", hide);
+  });
+
+  /* ---------- Botones magnéticos ---------- */
+  safe("magnéticos", () => {
+    if (!C.FINE_POINTER) return;
+    $$(".magnetic").forEach((btn) => {
+      const xTo = gsap.quickTo(btn, "x", { duration: 0.6, ease: "elastic.out(1, 0.45)" });
+      const yTo = gsap.quickTo(btn, "y", { duration: 0.6, ease: "elastic.out(1, 0.45)" });
+      btn.addEventListener("pointermove", (e) => {
+        const r = btn.getBoundingClientRect();
+        xTo((e.clientX - (r.left + r.width / 2)) * 0.32);
+        yTo((e.clientY - (r.top + r.height / 2)) * 0.42);
+      });
+      btn.addEventListener("pointerleave", () => { xTo(0); yTo(0); });
+    });
+  });
+
+  /* Recalcular cuando cargan fuentes e imágenes */
+  const refresh = () => ScrollTrigger.refresh();
+  document.fonts?.ready.then(refresh).catch(() => {});
+  window.addEventListener("load", refresh);
+})();
+</script>
+
+<!-- =========================================================
+     C) Escena 3D (Three.js r169 como módulo ES).
+     Muela low-poly de cristal (transmisión, iridiscencia, clearcoat),
+     entorno HDR procedural, palabra COISE en 3D y bloom.
+     Si algo falla (sin WebGL2 o sin CDN) se muestra el respaldo plano.
+     ========================================================= -->
+<script type="module">
+const C = window.COISE;
+const root = document.documentElement;
+
+function webgl2Available() {
+  try { const c = document.createElement("canvas"); return !!c.getContext("webgl2"); } catch { return false; }
+}
+
+(async () => {
+  if (!C) return;
+  try {
+    if (!webgl2Available()) throw new Error("WebGL2 no disponible");
+    const [THREE, ec, rp, ub, op] = await Promise.all([
+      import("three"),
+      import("three/addons/postprocessing/EffectComposer.js"),
+      import("three/addons/postprocessing/RenderPass.js"),
+      import("three/addons/postprocessing/UnrealBloomPass.js"),
+      import("three/addons/postprocessing/OutputPass.js")
+    ]);
+    const tooth = buildScene(THREE, ec.EffectComposer, rp.RenderPass, ub.UnrealBloomPass, op.OutputPass);
+    C.tooth = tooth;
+    root.classList.remove("no-3d");
+    root.classList.add("has-3d");
+    tooth.renderOnce();
+    const choreo = buildChoreo(tooth);
+    choreo.build();
+    if (!C.RM) tooth.start();
+    const rebuild = debounce(() => { if (window.ScrollTrigger) ScrollTrigger.refresh(); choreo.build(); }, 220);
+    window.addEventListener("resize", rebuild);
+    if ("ResizeObserver" in window) new ResizeObserver(rebuild).observe(document.body);
+    document.fonts?.ready.then(rebuild).catch(() => {});
+    window.addEventListener("load", rebuild);
+    C.resolve3d(true);
+  } catch (err) {
+    console.warn("[COISE] Se muestra la versión plana del logotipo:", err?.message || err);
+    root.classList.remove("has-3d");
+    root.classList.add("no-3d");
+    C.resolve3d(false);
+  }
+})();
+
+function debounce(fn, ms) { let id = 0; return (...a) => { clearTimeout(id); id = setTimeout(() => fn(...a), ms); }; }
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+const rand = (n) => { const s = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); };
+const hash3 = (x, y, z) => rand(x * 127.1 + y * 311.7 + z * 74.7);
+
+function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass) {
+  const RM = C.RM;
+  const stage = document.getElementById("stage");
+  const canvas = document.getElementById("gl");
+  const isSmall = () => window.innerWidth < 860;
+
+  const renderer = new T.WebGLRenderer({ canvas, antialias: false, alpha: false, stencil: false, powerPreference: "high-performance" });
+  if (!renderer.getContext()) throw new Error("Sin contexto WebGL");
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.setClearColor(0x040a13, 1);
+
+  const scene = new T.Scene();
+  const FOV = 30, CAM_Z = 10;
+  const camera = new T.PerspectiveCamera(FOV, 1, 0.1, 80);
+  camera.position.set(0, 0, CAM_Z);
+  camera.updateMatrixWorld(); // sin esto, la primera proyección divide por cero
+  const halfAt = (z) => Math.tan((FOV * Math.PI) / 360) * (CAM_Z - z);
+
+  /* ---- Entorno HDR procedural: estudio oscuro con paneles de luz en tonos de marca ---- */
+  {
+    const env = new T.Scene();
+    env.add(new T.Mesh(new T.BoxGeometry(30, 30, 30), new T.MeshBasicMaterial({ color: new T.Color("#04101c"), side: T.BackSide })));
+    const panel = (w, h, hex, k, pos) => {
+      const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color: new T.Color(hex).multiplyScalar(k), side: T.DoubleSide }));
+      m.position.set(...pos); m.lookAt(0, 0, 0); env.add(m);
+    };
+    panel(12, 2.2, "#ffffff", 7, [0, 9, 4]);       // caja de luz cenital
+    panel(2.4, 12, "#cfefff", 4.5, [-10, 1, 3]);    // tira lateral fría
+    panel(2.4, 12, "#5B8A9A", 6, [10, 0, -1]);      // relleno petróleo
+    panel(9, 1.2, "#e6f7ff", 3.5, [0, -8, 6]);      // contraluz bajo
+    panel(4, 4, "#7fd4ea", 4, [5, 4, -10]);         // reflejo turquesa
+    panel(5, 2, "#ffffff", 3, [-6, -3, -9]);
+    const pm = new T.PMREMGenerator(renderer);
+    scene.environment = pm.fromScene(env, 0.02).texture;
+    pm.dispose();
+  }
+
+  /* ---- Fondo: plano opaco con resplandor que sigue a la muela (el cristal lo refracta) ---- */
+  const bgU = {
+    uA: { value: new T.Color("#02060c") },
+    uB: { value: new T.Color("#0a1f36") },
+    uGlow: { value: new T.Color("#4f8fa6") },
+    uPos: { value: new T.Vector2(0.5, 0.55) },
+    uK: { value: 1 },
+    uAspect: { value: 1 },
+    uTime: { value: 0 }
+  };
+  const bg = new T.Mesh(new T.PlaneGeometry(1, 1), new T.ShaderMaterial({
+    uniforms: bgU, depthWrite: false,
+    vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `
+      varying vec2 vUv;
+      uniform vec3 uA, uB, uGlow; uniform vec2 uPos; uniform float uK, uAspect, uTime;
+      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float n(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
+        return mix(mix(h(i), h(i+vec2(1,0)), u.x), mix(h(i+vec2(0,1)), h(i+vec2(1,1)), u.x), u.y); }
+      void main(){
+        vec2 p = vUv - uPos; p.x *= uAspect;
+        float d = length(p);
+        vec3 col = mix(uA, uB, smoothstep(0.0, 1.0, vUv.y) * 0.55);
+        float g = exp(-d * d * 8.0);
+        float caustic = n(p * 4.0 + vec2(uTime * 0.05, -uTime * 0.03)) * n(p * 7.0 - uTime * 0.04);
+        col += uGlow * (g * 0.24 + caustic * g * 0.2) * uK;
+        col += uGlow * 0.05 * exp(-pow(length((vUv - vec2(0.08, 0.05)) * vec2(uAspect, 1.0)), 2.0) * 3.0);
+        col *= 1.0 - 0.45 * smoothstep(0.35, 1.1, length((vUv - 0.5) * vec2(uAspect, 1.0)));
+        gl_FragColor = vec4(col, 1.0);
+      }`
+  }));
+  bg.position.z = -9;
+  bg.renderOrder = -1;
+  scene.add(bg);
+
+  /* ---- Geometría de la muela (corona con 4 cúspides + dos raíces) ---- */
+  function buildCrown() {
+    const g = new T.IcosahedronGeometry(1, 2);
+    const pos = g.attributes.position;
+    const v = new T.Vector3();
+    const cusps = [[0.44, 0.3], [-0.44, 0.3], [0.44, -0.3], [-0.44, -0.3]];
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      const p = 3.2;
+      const nn = Math.pow(Math.pow(Math.abs(v.x), p) + Math.pow(Math.abs(v.y), p) + Math.pow(Math.abs(v.z), p), 1 / p);
+      let x = v.x / nn, y = v.y / nn, z = v.z / nn;
+      z *= 0.8; y *= 0.52;
+      const tb = smooth(0.05, -0.52, y);
+      x *= 1 - 0.3 * tb; z *= 1 - 0.26 * tb;
+      const mid = 1 + 0.06 * Math.exp(-((y - 0.05) * (y - 0.05)) / 0.05);
+      x *= mid; z *= mid;
+      if (y > 0) {
+        const tt = smooth(0.12, 0.5, y);
+        let bump = 0;
+        for (const c of cusps) { const d2 = (x - c[0]) ** 2 + (z - c[1]) ** 2; bump += Math.exp(-d2 / 0.07); }
+        const fiss = Math.exp(-(x * x) / 0.025) * 0.7 + Math.exp(-(z * z) / 0.02) * 0.35;
+        y += tt * (0.3 * Math.min(bump, 1.05) - 0.14 * fiss - 0.06);
+      }
+      x += (hash3(v.x, v.y, v.z) - 0.5) * 0.06;
+      y += (hash3(v.y, v.z, v.x) - 0.5) * 0.04;
+      z += (hash3(v.z, v.x, v.y) - 0.5) * 0.06;
+      pos.setXYZ(i, x, y, z);
+    }
+    g.computeVertexNormals();
+    return g;
+  }
+  function buildRoot(side, seed) {
+    const sides = 6;
+    const rings = [
+      { y: -0.22, cx: 0.30, rx: 0.36, rz: 0.44, tw: 0.2 },
+      { y: -0.62, cx: 0.37, rx: 0.32, rz: 0.38, tw: 0.55 },
+      { y: -1.02, cx: 0.45, rx: 0.25, rz: 0.30, tw: 0.15 },
+      { y: -1.42, cx: 0.48, rx: 0.18, rz: 0.22, tw: 0.6 },
+      { y: -1.76, cx: 0.45, rx: 0.10, rz: 0.12, tw: 0.3 }
+    ];
+    const tip = new T.Vector3(side * 0.42, -2.0, 0);
+    const pts = rings.map((r, k) => {
+      const ring = [];
+      for (let s = 0; s < sides; s++) {
+        const a = (s / sides) * Math.PI * 2 + r.tw;
+        const j = 1 + (rand(seed + k * 13 + s) - 0.5) * 0.18;
+        ring.push(new T.Vector3(side * r.cx + Math.cos(a) * r.rx * j, r.y + (rand(seed + k * 7 + s * 3) - 0.5) * 0.06, Math.sin(a) * r.rz * j));
+      }
+      return ring;
+    });
+    const centers = rings.map((r) => new T.Vector3(side * r.cx, r.y, 0));
+    const out = [];
+    const ab = new T.Vector3(), ac = new T.Vector3(), nrm = new T.Vector3(), cen = new T.Vector3();
+    const tri = (a, b, c, ref) => {
+      ab.subVectors(b, a); ac.subVectors(c, a); nrm.crossVectors(ab, ac);
+      cen.copy(a).add(b).add(c).multiplyScalar(1 / 3).sub(ref);
+      if (nrm.dot(cen) < 0) { const t = b; b = c; c = t; }
+      out.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    };
+    for (let k = 0; k < rings.length - 1; k++) {
+      const ref = centers[k].clone().lerp(centers[k + 1], 0.5);
+      for (let s = 0; s < sides; s++) {
+        const a = pts[k][s], b = pts[k][(s + 1) % sides], c = pts[k + 1][s], d = pts[k + 1][(s + 1) % sides];
+        tri(a, b, c, ref); tri(b, d, c, ref);
+      }
+    }
+    const last = rings.length - 1;
+    for (let s = 0; s < sides; s++) tri(pts[last][s], pts[last][(s + 1) % sides], tip, centers[last]);
+    const topRef = centers[0].clone().add(new T.Vector3(0, -0.4, 0));
+    for (let s = 0; s < sides; s++) tri(pts[0][(s + 1) % sides], pts[0][s], centers[0], topRef);
+    const g = new T.BufferGeometry();
+    g.setAttribute("position", new T.Float32BufferAttribute(out, 3));
+    g.computeVertexNormals();
+    return g;
+  }
+
+  /* ---- Materiales ---- */
+  const glass = new T.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 0, roughness: 0.06,
+    transmission: 1, thickness: 1.6, ior: 1.52, dispersion: 4,
+    attenuationColor: new T.Color("#bfe6f2"), attenuationDistance: 3.2,
+    clearcoat: 1, clearcoatRoughness: 0.04,
+    iridescence: 0.85, iridescenceIOR: 1.35, iridescenceThicknessRange: [180, 820],
+    specularIntensity: 1, envMapIntensity: 1.35,
+    flatShading: true, transparent: true, opacity: 1
+  });
+  const edgeMat = new T.LineBasicMaterial({ color: new T.Color("#cdeffa"), transparent: true, opacity: 0.16, blending: T.AdditiveBlending, depthWrite: false });
+  const titanium = new T.MeshPhysicalMaterial({ color: new T.Color("#c4ced6"), metalness: 1, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.2, flatShading: true, transparent: true });
+  const letterMat = new T.MeshStandardMaterial({ color: new T.Color("#e8f6fb"), emissive: new T.Color("#9fdcef"), emissiveIntensity: 0.36, metalness: 0.85, roughness: 0.16 });
+
+  /* ---- Montaje de la muela ---- */
+  const pivot = new T.Group(), inner = new T.Group();
+  inner.position.y = 0.62;
+  pivot.add(inner); scene.add(pivot);
+
+  const crownGeo = buildCrown();
+  const crown = new T.Group();
+  crown.add(new T.Mesh(crownGeo, glass));
+  const crownEdges = new T.LineSegments(new T.EdgesGeometry(crownGeo, 14), edgeMat);
+  crownEdges.scale.setScalar(1.002);
+  crown.add(crownEdges);
+  inner.add(crown);
+
+  const roots = new T.Group();
+  const rootL = new T.Group(), rootR = new T.Group();
+  [[rootL, -1, 11], [rootR, 1, 29]].forEach(([g, side, seed]) => {
+    const geo = buildRoot(side, seed);
+    g.add(new T.Mesh(geo, glass));
+    g.add(new T.LineSegments(new T.EdgesGeometry(geo, 14), edgeMat));
+    roots.add(g);
+  });
+  inner.add(roots);
+
+  // Implante: tornillo de titanio con rosca helicoidal y pilar hexagonal
+  const screw = new T.Group();
+  {
+    screw.add(new T.Mesh(new T.CylinderGeometry(0.15, 0.08, 1.05, 10), titanium));
+    class Helix extends T.Curve {
+      getPoint(t, target = new T.Vector3()) {
+        const ang = t * 6.5 * Math.PI * 2, r = 0.19 - t * 0.08;
+        return target.set(Math.cos(ang) * r, 0.47 - t * 0.95, Math.sin(ang) * r);
+      }
+    }
+    screw.add(new T.Mesh(new T.TubeGeometry(new Helix(), 120, 0.034, 5, false), titanium));
+    const abut = new T.Mesh(new T.CylinderGeometry(0.15, 0.2, 0.28, 6), titanium);
+    abut.position.y = 0.66;
+    screw.add(abut);
+    screw.position.y = -0.25;
+    screw.visible = false;
+    inner.add(screw);
+  }
+  const keyLight = new T.DirectionalLight(0xffffff, 1.4); keyLight.position.set(-3, 5, 6); scene.add(keyLight);
+  const rimLight = new T.DirectionalLight(new T.Color("#8adcf0"), 2.2); rimLight.position.set(5, 1, -4); scene.add(rimLight);
+
+  // Destellos (estética): sprites aditivos en HDR para que los recoja el bloom
+  const sparkles = [];
+  {
+    const c = document.createElement("canvas"); c.width = c.height = 64;
+    const x = c.getContext("2d");
+    if (x) {
+      const g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(0.2, "rgba(210,248,255,.7)"); g.addColorStop(1, "rgba(138,220,240,0)");
+      x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+      x.fillStyle = "rgba(255,255,255,.95)"; x.fillRect(31.2, 0, 1.6, 64); x.fillRect(0, 31.2, 64, 1.6);
+      const tex = new T.CanvasTexture(c);
+      const cp = crownGeo.attributes.position;
+      const picks = [];
+      for (let i = 0; i < cp.count && picks.length < 60; i += 5) if (cp.getY(i) > 0.1) picks.push(i);
+      for (let n = 0; n < 12 && picks.length; n++) {
+        const i = picks[Math.floor(rand(n * 5.3 + 1) * picks.length)];
+        const m = new T.SpriteMaterial({ map: tex, color: new T.Color(2.2, 2.6, 2.8), transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending });
+        const sp = new T.Sprite(m);
+        sp.position.set(cp.getX(i) * 1.06, cp.getY(i) * 1.06 + 0.02, cp.getZ(i) * 1.1);
+        sp.userData = { phase: rand(n * 9.1) * Math.PI * 2, speed: 2 + rand(n * 2.7) * 2.5 };
+        crown.add(sp); sparkles.push(sp);
+      }
+    }
+  }
+
+  /* ---- La palabra COISE en 3D: tubos finos con la misma geometría que el SVG #wm ---- */
+  class FnCurve extends T.Curve {
+    constructor(fn) { super(); this.fn = fn; }
+    getPoint(t, target = new T.Vector3()) { const [x, y] = this.fn(t); return target.set(x, y, 0); }
+  }
+  const W = 630, R = 2.3; // ancho total (unidades SVG) y radio del trazo
+  const arc = (cx, cy, rx, ry, a0, a1) => (t) => { const a = ((a0 + (a1 - a0) * t) * Math.PI) / 180; return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; };
+  const line = (x0, y0, x1, y1) => (t) => [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t];
+  const LETTERS = [
+    { ox: 0, cx: 43, strokes: [[arc(50, 50, 50, 50, -45, -315), 90, false]], caps: [[85.36, 14.64], [85.36, 85.36]] },
+    { ox: 156, cx: 50, strokes: [[arc(50, 50, 50, 50, 0, 360), 96, true]], caps: [] },
+    { ox: 326, cx: 0, strokes: [[line(0, 0, 0, 100), 2, false]], caps: [[0, 0], [0, 100]] },
+    { ox: 388, cx: 50, strokes: [[arc(50, 25, 42, 25, -40, -270), 60, false], [arc(50, 75, 42, 25, -90, 140), 60, false]], caps: [[82.17, 8.93], [17.83, 91.07]] },
+    { ox: 550, cx: 40, strokes: [[line(80, 0, 0, 0), 2, false], [line(0, 0, 0, 100), 2, false], [line(0, 100, 80, 100), 2, false], [line(0, 50, 68, 50), 2, false]], caps: [[80, 0], [0, 0], [0, 100], [80, 100], [68, 50]] }
+  ];
+  const word = new T.Group();
+  const letters = [];
+  const capGeo = new T.SphereGeometry(R, 12, 8);
+  LETTERS.forEach((L, i) => {
+    const g = new T.Group();
+    const toLocal = (fn) => (t) => { const [x, y] = fn(t); return [x - L.cx, 50 - y]; };
+    L.strokes.forEach(([fn, seg, closed]) => {
+      g.add(new T.Mesh(new T.TubeGeometry(new FnCurve(toLocal(fn)), seg, R, 10, closed), letterMat));
+    });
+    L.caps.forEach(([x, y]) => { const s = new T.Mesh(capGeo, letterMat); s.position.set(x - L.cx, 50 - y, 0); g.add(s); });
+    const base = new T.Vector3(L.ox + L.cx - W / 2, 0, 0);
+    g.position.copy(base);
+    g.userData = { base, i };
+    word.add(g); letters.push(g);
+  });
+  const wordHolder = new T.Group();
+  wordHolder.add(word);
+  wordHolder.position.z = -1.6;
+  scene.add(wordHolder);
+
+  /* ---- Postprocesado: render HDR con MSAA, bloom sutil y salida con tone mapping ---- */
+  const rt = new T.WebGLRenderTarget(1, 1, { type: T.HalfFloatType, samples: isSmall() ? 2 : 4 });
+  const composer = new EffectComposer(renderer, rt);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new T.Vector2(1, 1), 0.5, 0.55, 0.82);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  /* ---- Tamaño y proyección ---- */
+  const view = { w: 1, h: 1, halfW: 1, halfH: 1, base: 1, dpr: 1 };
+  const TOOTH_H = 2.8, TOOTH_W = 2.1;
+  let dprCap = isSmall() ? 1.5 : 1.75;
+  function resize() {
+    const w = Math.max(1, stage.clientWidth), h = Math.max(1, stage.clientHeight);
+    view.dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+    renderer.setPixelRatio(view.dpr);
+    renderer.setSize(w, h, false);
+    composer.setPixelRatio(view.dpr);
+    composer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    view.w = w; view.h = h;
+    view.halfH = halfAt(0);
+    view.halfW = view.halfH * camera.aspect;
+    view.base = Math.min((0.62 * 2 * view.halfH) / TOOTH_H, (0.8 * 2 * view.halfW) / TOOTH_W);
+    // Fondo: cubre todo el encuadre a su profundidad
+    const bh = halfAt(bg.position.z) * 2.2;
+    bg.scale.set(bh * camera.aspect, bh, 1);
+    bgU.uAspect.value = camera.aspect;
+    // Palabra: ocupa ~84 % del ancho (92 % en móvil)
+    const hw = halfAt(wordHolder.position.z) * camera.aspect;
+    const frac = isSmall() ? 0.9 : 0.8;
+    word.scale.setScalar((frac * 2 * hw) / (W + 2 * R));
+    word.userData.y = (isSmall() ? 0.5 : 0.13) * halfAt(wordHolder.position.z);
+  }
+  const toothPxAtS1 = () => view.base * TOOTH_H * (view.h / (2 * view.halfH));
+
+  /* ---- Estado animable ---- */
+  const S = { x: 0, y: 0.07, s: 0.95, ry: 0.45, rx: 0.16, rz: 0, ex: 0, gl: 0.15, op: 1, wm: 0 };
+  const intro = { v: RM ? 1 : 0, l: LETTERS.map(() => (RM ? 1 : 0)) };
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+  const glowPos = { x: 0.5, y: 0.55 };
+  let running = false, rafId = 0, t0 = performance.now(), manualTarget = null, idleDone = false;
+  const v3 = new T.Vector3();
+
+  function apply(t) {
+    const heroW = clamp(1 - window.scrollY / (view.h * 0.9), 0, 1);
+    const sway = RM ? 0 : Math.sin(t * 0.45) * 0.38 * (0.35 + 0.65 * heroW);
+    mouse.x += (mouse.tx - mouse.x) * 0.05;
+    mouse.y += (mouse.ty - mouse.y) * 0.05;
+    const iv = intro.v;
+
+    // Muela
+    pivot.position.set(S.x * view.halfW + mouse.x * 0.14, S.y * view.halfH - mouse.y * 0.1 + (1 - iv) * -0.6, 0);
+    pivot.scale.setScalar(view.base * S.s * (0.55 + 0.45 * iv));
+    pivot.rotation.set(S.rx + mouse.y * 0.22, S.ry + sway + mouse.x * 0.5 - (1 - iv) * 2.8, S.rz + (1 - iv) * 0.3);
+    const o = clamp(S.op, 0, 1) * clamp(iv * 1.6, 0, 1);
+    glass.opacity = o; titanium.opacity = o;
+    edgeMat.opacity = (0.09 + clamp(S.gl, 0, 1) * 0.22) * o;
+    pivot.visible = o > 0.01;
+
+    // Vista explosionada (implantes)
+    const ex = clamp(S.ex, 0, 1);
+    crown.position.y = ex * 0.75;
+    crown.rotation.z = ex * 0.08;
+    roots.position.y = -ex * 0.65;
+    rootL.position.x = -ex * 0.16;
+    rootR.position.x = ex * 0.16;
+    const sc = smooth(0.2, 0.85, ex);
+    screw.visible = sc > 0.01;
+    if (screw.visible) { screw.scale.setScalar(0.4 + 0.6 * sc); screw.rotation.y = t * 1.2; }
+
+    // Brillo (estética)
+    const gl = clamp(S.gl, 0, 1);
+    glass.iridescence = 0.7 + gl * 0.3;
+    glass.envMapIntensity = 1.3 + gl * 0.9;
+    bloom.strength = 0.45 + gl * 0.5;
+    for (const sp of sparkles) {
+      const tw = Math.pow(0.5 + 0.5 * Math.sin(t * sp.userData.speed + sp.userData.phase), 3);
+      sp.material.opacity = gl * tw * o;
+      sp.scale.setScalar(0.14 + 0.3 * tw * gl);
+    }
+
+    // Palabra COISE: entra letra a letra y sale volando hacia la cámara con el scroll
+    const wm = clamp(S.wm, 0, 1);
+    const we = wm * wm * (3 - 2 * wm);
+    wordHolder.visible = wm < 0.985;
+    if (wordHolder.visible) {
+      word.position.y = word.userData.y;
+      wordHolder.rotation.set(-mouse.y * 0.06, mouse.x * 0.1, 0);
+      wordHolder.position.x = -mouse.x * 0.12;
+      letters.forEach((g) => {
+        const i = g.userData.i, li = intro.l[i];
+        const k = i - 2;
+        const e = 1 - li;
+        g.position.set(
+          g.userData.base.x + k * 150 * we,
+          (i % 2 ? 1 : -1) * (36 * we + 60 * e),
+          we * (260 + Math.abs(k) * 60) - e * 420
+        );
+        g.rotation.set((i % 2 ? 1 : -1) * (0.9 * we + 1.3 * e), k * 0.45 * we + e * 0.8 * (k || 1), k * 0.12 * we);
+        g.visible = li > 0.001;
+      });
+    }
+
+    // El resplandor del fondo sigue a la muela
+    v3.copy(pivot.position).project(camera);
+    if (Number.isFinite(v3.x) && Number.isFinite(v3.y)) {
+      glowPos.x += ((v3.x * 0.5 + 0.5) - glowPos.x) * 0.08;
+      glowPos.y += ((v3.y * 0.5 + 0.5 + 0.04) - glowPos.y) * 0.08;
+    }
+    bgU.uPos.value.set(glowPos.x, glowPos.y);
+    bgU.uK.value = 0.55 + 0.45 * o + gl * 0.35;
+    bgU.uTime.value = t;
+    return o > 0.01 || wordHolder.visible;
+  }
+
+  /* ---- Bucle de render con ajuste de calidad automático ---- */
+  let frames = 0, slow = 0, lastNow = 0, degraded = false;
+  function frame(now) {
+    rafId = 0;
+    const t = (now - t0) / 1000;
+    if (manualTarget) {
+      const target = manualTarget();
+      for (const k in target) if (k in S) S[k] += (target[k] - S[k]) * 0.1;
+    }
+    const active = apply(t);
+    // Con la muela oculta basta con un último fotograma: el resto del tiempo no se pinta
+    if (active) { composer.render(); idleDone = false; }
+    else if (!idleDone) { composer.render(); idleDone = true; }
+    // Si el equipo no llega a ~40 fps, bajamos resolución y quitamos el bloom
+    if (active && lastNow && !degraded && document.visibilityState === "visible") {
+      const dt = now - lastNow;
+      if (dt < 250) { frames++; if (dt > 26) slow++; }
+      if (frames === 120) {
+        if (slow > 60) { degraded = true; dprCap = 1; bloom.enabled = false; resize(); }
+        frames = 0; slow = 0;
+      }
+    }
+    lastNow = now;
+    if (running) rafId = requestAnimationFrame(frame);
+  }
+  function start() { if (running || RM) return; running = true; rafId = requestAnimationFrame(frame); }
+  function stop() { running = false; if (rafId) cancelAnimationFrame(rafId); rafId = 0; lastNow = 0; }
+  function renderOnce() { apply(0); composer.render(); }
+
+  function playIntro() {
+    if (RM || !window.gsap) { intro.v = 1; intro.l.fill(1); return; }
+    gsap.to(intro, { v: 1, duration: 2.6, ease: "expo.out", delay: 0.05 });
+    intro.l.forEach((_, i) => gsap.to(intro.l, { [i]: 1, duration: 2.2, ease: "expo.out", delay: 0.15 + i * 0.09 }));
+  }
+
+  document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); else start(); });
+  canvas.addEventListener("webglcontextlost", (e) => {
+    e.preventDefault(); stop();
+    root.classList.remove("has-3d"); root.classList.add("no-3d");
+    console.warn("[COISE] Se perdió el contexto WebGL: se muestra el logotipo plano.");
+  });
+  if (C.FINE_POINTER && !RM) {
+    window.addEventListener("pointermove", (e) => {
+      mouse.tx = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.ty = (e.clientY / window.innerHeight) * 2 - 1;
+    }, { passive: true });
+  }
+
+  resize();
+  if (!window.gsap && !RM) { intro.v = 1; intro.l.fill(1); }
+  return { S, intro, view, resize, start, stop, renderOnce, playIntro, toothPxAtS1, setManual: (fn) => { manualTarget = fn; } };
+}
+
+/* =========================================================
+   Coreografía: cada [data-tooth] declara un estado de la muela.
+   Las secciones mantienen su estado mientras ocupan la pantalla;
+   los marcadores .tk fijan puntos exactos dentro de las secciones fijadas.
+   ========================================================= */
+function buildChoreo(Tooth) {
+  const PROPS = ["x", "y", "s", "ry", "rx", "rz", "ex", "gl", "op", "wm"];
+  const parse = (str) => {
+    const o = {};
+    (str || "").split(";").forEach((pair) => {
+      const [k, v] = pair.split(":").map((s) => s && s.trim());
+      if (!k) return;
+      o[k] = k === "at" ? v : Number(v);
+    });
+    return o;
+  };
+  function buildKeys() {
+    const mobile = window.innerWidth < 860;
+    const vh = Tooth.view.h, vw = Tooth.view.w;
+    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const raw = [];
+    document.querySelectorAll("[data-tooth]").forEach((node) => {
+      const spec = parse(node.dataset.tooth);
+      if (mobile && node.dataset.toothM) Object.assign(spec, parse(node.dataset.toothM));
+      const r = node.getBoundingClientRect();
+      const absTop = r.top + window.scrollY;
+      if (spec.follow) {
+        // La muela se coloca exactamente sobre este hueco (pie)
+        const at = clamp(spec.at === "end" ? max : 0, 0, max);
+        const top = absTop - at;
+        spec.x = ((r.left + r.width / 2) / vw) * 2 - 1;
+        spec.y = -(((top + r.height / 2) / vh) * 2 - 1);
+        spec.s = (r.height * 0.92) / Math.max(1, Tooth.toothPxAtS1());
+        delete spec.at; delete spec.follow;
+        raw.push({ at, spec });
+      } else if (r.height > 0) {
+        const enter = clamp(absTop - vh * 0.15, 0, max);
+        const leave = clamp(Math.max(enter, absTop + r.height - vh * 0.85), 0, max);
+        raw.push({ at: enter, spec }, { at: leave, spec });
+      } else {
+        raw.push({ at: clamp(absTop - vh / 2, 0, max), spec });
+      }
+    });
+    raw.sort((a, b) => a.at - b.at);
+    const keys = [];
+    let prev = { ...Tooth.S };
+    raw.forEach((k, i) => {
+      const state = { ...prev };
+      PROPS.forEach((p) => { if (Number.isFinite(k.spec[p])) state[p] = k.spec[p]; });
+      let at = k.at;
+      if (i && at <= keys[i - 1].at) at = keys[i - 1].at + 1;
+      keys.push({ at, state });
+      prev = state;
+    });
+    return { keys, max };
+  }
+  const sample = (keys, y) => {
+    if (!keys.length) return Tooth.S;
+    if (y <= keys[0].at) return keys[0].state;
+    for (let i = 1; i < keys.length; i++) {
+      if (y <= keys[i].at) {
+        const a = keys[i - 1], b = keys[i];
+        let t = (y - a.at) / (b.at - a.at);
+        t = t * t * (3 - 2 * t);
+        const o = {};
+        PROPS.forEach((p) => { o[p] = a.state[p] + (b.state[p] - a.state[p]) * t; });
+        return o;
+      }
+    }
+    return keys[keys.length - 1].state;
+  };
+  let tl = null, st = null, current = { keys: [], max: 1 };
+  function build() {
+    Tooth.resize();
+    current = buildKeys();
+    const { keys, max } = current;
+    if (!keys.length) return;
+    if (C.RM) { Object.assign(Tooth.S, keys[0].state); Tooth.renderOnce(); return; }
+    if (window.gsap && window.ScrollTrigger) {
+      const progress = st ? st.progress : 0;
+      if (st) st.kill();
+      if (tl) tl.kill();
+      tl = gsap.timeline({ paused: true, defaults: { ease: "sine.inOut" } });
+      tl.set(Tooth.S, { ...keys[0].state }, 0);
+      for (let i = 1; i < keys.length; i++) {
+        tl.to(Tooth.S, { ...keys[i].state, duration: Math.max(1, keys[i].at - keys[i - 1].at) }, keys[i - 1].at);
+      }
+      const tail = max - tl.duration();
+      if (tail > 0) tl.to({}, { duration: tail });
+      tl.progress(progress);
+      st = ScrollTrigger.create({ start: 0, end: max, scrub: 1, animation: tl });
+    } else {
+      Tooth.setManual(() => sample(current.keys, window.scrollY));
+    }
+  }
+  return { build };
+}
+</script>
+<div class="propuesta-aviso" role="note">Propuesta de diseño para COISE · no es la web oficial</div>
+<style>
+.propuesta-aviso{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:9999;
+ background:rgba(255,209,102,.96);color:#1a1a1a;font:600 11.5px/1.2 system-ui,"Segoe UI",Arial,sans-serif;
+ padding:6px 12px;border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35);pointer-events:none;
+ white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
+</style>
+</body>
+</html>
