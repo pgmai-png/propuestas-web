@@ -4,3 +4,4 @@ Propuestas de diseño para clínicas, publicadas con GitHub Pages solo para ense
 No son webs oficiales: cada página lo indica y no se indexa en buscadores (`noindex` y `robots.txt`).
 
 - `coise/` → propuesta para COISE (copia de `Webs IA/coise/index.html`, rama `coise-v3-awwwards`, con aviso de propuesta).
+- `modelo/` → web de ejemplo con una clínica ficticia (Clínica Dental Demo), para enseñar a cualquier clínica. Copia de `Webs IA/modelo/index.html`.
