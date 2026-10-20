@@ -1954,6 +1954,9 @@ function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, 
       const t = Math.acos(clamp(v.y, -1, 1)) / Math.PI;
       const r = Math.max(0, profile(t, PR));
       let y = profile(t, PY);
+      // El perfil de muela tiene la cara de arriba hundida. En dientes sin relieve (incisivos) se rellena
+      // hasta un borde plano y ligeramente redondeado; si no, se ve un «cuenco» con un borde en media luna.
+      if (anat < 1) y += (1 - anat) * smooth(0.34, 0.0, t) * (0.47 - y);
       // Planta de esquinas redondeadas (squircle), algo más estrecha en sentido vestíbulo-lingual
       const c = Math.abs(Math.cos(th)), sn = Math.abs(Math.sin(th));
       const sq = 1 / Math.pow(Math.pow(c, 3) + Math.pow(sn, 3), 1 / 3);
@@ -2019,9 +2022,9 @@ function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, 
   /* ---- Arcada: 12 dientes colocados por su anchura sobre una curva en U ---- */
   // Medidas relativas a la muela base (ancho, alto, grosor y relieve oclusal), de la línea media hacia atrás
   const TYPES = [
-    { w: 0.40, h: 1.22, d: 0.36, a: 0.12 }, // incisivo central
-    { w: 0.33, h: 1.12, d: 0.34, a: 0.12 }, // incisivo lateral
-    { w: 0.37, h: 1.24, d: 0.46, a: 0.3 },  // canino
+    { w: 0.40, h: 1.22, d: 0.36, a: 0 },    // incisivo central (borde liso, sin fosa de muela)
+    { w: 0.33, h: 1.12, d: 0.34, a: 0 },    // incisivo lateral
+    { w: 0.37, h: 1.24, d: 0.46, a: 0.12 }, // canino
     { w: 0.40, h: 0.98, d: 0.52, a: 0.65 }, // primer premolar
     { w: 0.40, h: 0.95, d: 0.52, a: 0.65 }, // segundo premolar
     { w: 0.56, h: 0.9, d: 0.62, a: 1 }      // primer molar
@@ -2095,14 +2098,24 @@ function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, 
 
   // Plan: malla de alambre con la posición final de cada diente
   const wires = new T.Group();
-  // Alineador: una funda transparente por diente, en la posición final, que baja hasta encajar
+  // Alineador: una funda transparente por diente que baja, encaja y acompaña al diente mientras se mueve.
+  // La funda se hace desplazando cada vértice a lo largo de su normal (no escalando): así envuelve el
+  // relieve de las cúspides sin que el diente la atraviese.
+  const SHELL = 0.045;
+  const shellGeo = typeGeo.map((g) => {
+    const s = g.clone(), p = s.attributes.position, n = s.attributes.normal;
+    for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) + n.getX(i) * SHELL, p.getY(i) + n.getY(i) * SHELL, p.getZ(i) + n.getZ(i) * SHELL);
+    s.computeVertexNormals();
+    return s;
+  });
   const trayG = new T.Group();
   const dummy = new T.Object3D();
   teeth.forEach((t) => {
     const w = new T.LineSegments(new T.WireframeGeometry(typeGeoLo[t.k]), wireMat);
     poseTooth(t, 1, w); w.scale.setScalar(1.012); wires.add(w);
-    const sh = new T.Mesh(typeGeo[t.k], trayMat);
-    poseTooth(t, 1, sh); sh.scale.set(1.1, 1.06, 1.16); sh.renderOrder = 2; trayG.add(sh);
+    t.shell = new T.Mesh(shellGeo[t.k], trayMat);
+    t.shell.renderOrder = 2;
+    trayG.add(t.shell);
   });
   archIn.add(wires, trayG);
 
@@ -2271,7 +2284,9 @@ function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, 
       m.color.lerpColors(WHITE, CERAMIC, c);
       m.attenuationColor.lerpColors(ATT_GLASS, ATT_CER, c);
       m.transmission = 1 - 0.8 * c;
-      m.roughness = 0.05 + 0.15 * c;
+      // La arcada acaba más satinada que la muela: con 12 dientes juntos, el reflejo nítido de la luz
+      // cenital dibuja medias lunas en los bordes que parecen cortes.
+      m.roughness = 0.05 + (m === toothMat ? 0.25 : 0.15) * c;
       m.iridescence = 0.38 * (1 - c) + 0.1 * c;
     }
     const pts = clamp(S.pts, 0, 1), wr = clamp(S.wire, 0, 1), tray = clamp(S.tray, 0, 1), al = clamp(S.align, 0, 1);
@@ -2284,7 +2299,8 @@ function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, 
     toothMat.opacity = o * arch * clamp(1 - 0.72 * pts - 0.7 * wr * (1 - tray), 0.1, 1);
 
     // Cada diente llega a su sitio con un pequeño desfase, como en un tratamiento real
-    if (archG.visible) for (const th of teeth) poseTooth(th, smooth(th.off.delay, th.off.delay + 0.65, al));
+    // (la funda del alineador va siempre con su diente)
+    if (archG.visible) for (const th of teeth) { const a = smooth(th.off.delay, th.off.delay + 0.65, al); poseTooth(th, a); poseTooth(th, a, th.shell); }
 
     // Escaneo a lo largo de la arcada
     const scan = clamp(S.scan, 0, 1);
@@ -2384,6 +2400,18 @@ function buildScene(T, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, 
   }
 
   resize();
+  // Fotograma de calentamiento con todas las piezas visibles (arcada, alineador, malla, puntos, destellos),
+  // mientras la pantalla de carga tapa la página: compila los shaders y sube las geometrías a la GPU ahora.
+  // Si no, el navegador lo hace la primera vez que aparece cada pieza y el scroll da un tirón.
+  try {
+    const hidden = [];
+    scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
+    for (const m of [glass, toothMat, trayMat, wireMat]) { m.userData.op = m.opacity; m.opacity = Math.max(m.opacity, 0.5); }
+    renderer.compile(scene, camera);
+    composer.render();
+    for (const m of [glass, toothMat, trayMat, wireMat]) m.opacity = m.userData.op;
+    hidden.forEach((o) => { o.visible = false; });
+  } catch (err) { console.warn("[RP] No se pudo preparar la escena 3D por adelantado:", err?.message || err); }
   if (!window.gsap && !RM) intro.v = 1;
   return { S, intro, view, resize, start, stop, renderOnce, playIntro, crownPxAtS1, setManual: (fn) => { manualTarget = fn; } };
 }
